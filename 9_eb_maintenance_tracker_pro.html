@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9 EB Regiment - MT Maintenance Tracker</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kalpurush&family=Hind+Siliguri:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Hind Siliguri', 'Kalpurush', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .tab-active {
+            border-bottom: 4px solid #eab308; /* yellow-500 */
+            color: #166534; /* green-800 */
+            font-weight: 700;
+        }
+        /* Hide scrollbar for tabs */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+
+    <!-- Header Section -->
+    <header class="bg-green-800 text-white shadow-lg border-b-4 border-yellow-500 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="bg-yellow-500 p-2 rounded-full text-green-900 text-xl w-12 h-12 flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-truck-monster"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h1>
+                    <p class="text-green-200 text-xs md:text-sm">এমটি (MT) মেইনটেন্যান্স ট্র্যাকার</p>
+                </div>
+            </div>
+            <button onclick="requestNotificationPermission()" class="bg-green-700 hover:bg-green-600 px-3 py-2 rounded text-sm transition" title="নোটিফিকেশন চালু করুন">
+                <i class="fa-solid fa-bell text-yellow-400"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation Tabs -->
+        <div class="max-w-5xl mx-auto px-4 flex overflow-x-auto mt-2 text-sm md:text-base no-scrollbar">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-active px-4 py-2 whitespace-nowrap text-green-100 hover:text-white transition">ড্যাশবোর্ড ও অ্যালার্ট</button>
+            <button onclick="switchTab('add-maintenance')" id="tab-add-maintenance" class="px-4 py-2 whitespace-nowrap text-green-100 hover:text-white transition">রক্ষণাবেক্ষণ এন্ট্রি</button>
+            <button onclick="switchTab('vehicles')" id="tab-vehicles" class="px-4 py-2 whitespace-nowrap text-green-100 hover:text-white transition">যানবাহন তালিকা</button>
+            <button onclick="switchTab('settings')" id="tab-settings" class="px-4 py-2 whitespace-nowrap text-green-100 hover:text-white transition"><i class="fa-solid fa-cog mr-1"></i> কাজের ধরন সেটআপ</button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-5xl mx-auto px-4 mt-6">
+
+        <!-- 1. Dashboard Tab -->
+        <section id="sec-dashboard" class="block">
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-xl shadow border border-slate-200 flex flex-col items-center justify-center">
+                    <i class="fa-solid fa-car text-3xl text-blue-500 mb-2"></i>
+                    <span class="text-slate-500 text-sm font-semibold">মোট গাড়ি</span>
+                    <span id="stat-total-vehicles" class="text-2xl font-bold text-slate-800">0</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow border border-slate-200 flex flex-col items-center justify-center">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl text-red-500 mb-2"></i>
+                    <span class="text-slate-500 text-sm font-semibold">বকেয়া (Overdue)</span>
+                    <span id="stat-overdue" class="text-2xl font-bold text-red-600">0</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow border border-slate-200 flex flex-col items-center justify-center col-span-2 md:col-span-1">
+                    <i class="fa-solid fa-calendar-check text-3xl text-green-500 mb-2"></i>
+                    <span class="text-slate-500 text-sm font-semibold">আসন্ন (Next 30 Days)</span>
+                    <span id="stat-upcoming" class="text-2xl font-bold text-green-600">0</span>
+                </div>
+            </div>
+
+            <!-- Alerts Section -->
+            <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden mb-6">
+                <div class="bg-red-50 px-5 py-3 border-b border-red-100">
+                    <h2 class="font-bold text-red-800 flex items-center">
+                        <i class="fa-solid fa-bell text-red-600 mr-2"></i> জরুরি পরিবর্তনের অ্যালার্ট
+                    </h2>
+                </div>
+                <div id="alerts-container" class="p-4 space-y-3">
+                    <!-- Alerts will load here -->
+                    <p class="text-center text-slate-500 py-4 text-sm">এই মুহূর্তে কোনো জরুরি কাজ নেই।</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Maintenance Entry Tab -->
+        <section id="sec-add-maintenance" class="hidden">
+            <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+                <div class="bg-green-50 px-5 py-3 border-b border-green-100">
+                    <h2 class="font-bold text-green-900 flex items-center">
+                        <i class="fa-solid fa-tools text-green-600 mr-2"></i> নতুন মেইনটেন্যান্স রেকর্ড যোগ করুন
+                    </h2>
+                </div>
+                <form id="form-maintenance" class="p-5 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">গাড়ি নির্বাচন করুন (BA No)</label>
+                            <select id="maint-vehicle" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white">
+                                <!-- Vehicle options dynamic -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">কাজের ধরন নির্বাচন করুন</label>
+                            <select id="maint-type" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 bg-white">
+                                <!-- Task Type options dynamic -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">বদলি/কাজের তারিখ</label>
+                            <input type="date" id="maint-date" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">বর্তমান কিলোমিটার (KM)</label>
+                            <input type="number" id="maint-km" placeholder="যেমন: 45000" required min="0" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 rounded-lg transition mt-4 shadow-md">
+                        <i class="fa-solid fa-save mr-2"></i> রেকর্ড সেভ করুন
+                    </button>
+                </form>
+            </div>
+            
+            <!-- History List -->
+            <div class="mt-8 bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50 px-5 py-3 border-b border-slate-200">
+                    <h2 class="font-bold text-slate-800 flex items-center">
+                        <i class="fa-solid fa-clock-rotate-left text-slate-600 mr-2"></i> মেইনটেন্যান্স হিস্ট্রি
+                    </h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[600px]">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 text-sm">
+                                <th class="p-3 border-b">বিএ নম্বর</th>
+                                <th class="p-3 border-b">কাজের ধরন</th>
+                                <th class="p-3 border-b">তারিখ ও কি.মি</th>
+                                <th class="p-3 border-b text-red-600">পরবর্তী ডিউ (Due)</th>
+                                <th class="p-3 border-b text-center">অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="maintenance-history-list" class="divide-y divide-slate-100 text-sm">
+                            <!-- Data -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Vehicles List Tab -->
+        <section id="sec-vehicles" class="hidden">
+            <!-- Add Vehicle -->
+            <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden mb-6">
+                <div class="bg-blue-50 px-5 py-3 border-b border-blue-100">
+                    <h2 class="font-bold text-blue-900 flex items-center">
+                        <i class="fa-solid fa-truck-medical text-blue-600 mr-2"></i> নতুন গাড়ি যুক্ত করুন
+                    </h2>
+                </div>
+                <form id="form-vehicle" class="p-5 flex flex-col md:flex-row gap-4">
+                    <input type="text" id="veh-ba" placeholder="বিএ নম্বর (BA No.)" required class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <select id="veh-type" required class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="" disabled selected>গাড়ির ধরন নির্বাচন করুন...</option>
+                        <option value="Jeep">জিপ (Jeep)</option>
+                        <option value="PickUp">পিকআপ (PickUp)</option>
+                        <option value="3-Ton">৩-টন ট্রাক (3-Ton)</option>
+                        <option value="Ambulance">অ্যাম্বুলেন্স</option>
+                        <option value="Motorcycle">মোটরসাইকেল</option>
+                        <option value="Other">অন্যান্য</option>
+                    </select>
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-6 py-2 rounded-lg transition shadow-md">
+                        যুক্ত করুন
+                    </button>
+                </form>
+            </div>
+
+            <!-- Vehicle Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="vehicles-container">
+                <!-- Vehicle cards will be injected here -->
+            </div>
+        </section>
+
+        <!-- 4. Setup/Rules Tab (NEW) -->
+        <section id="sec-settings" class="hidden">
+            <!-- Add Rule -->
+            <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden mb-6">
+                <div class="bg-purple-50 px-5 py-3 border-b border-purple-100">
+                    <h2 class="font-bold text-purple-900 flex items-center">
+                        <i class="fa-solid fa-cogs text-purple-600 mr-2"></i> নতুন কাজের ধরন ও নিয়ম যুক্ত করুন
+                    </h2>
+                </div>
+                <form id="form-rule" class="p-5 space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">কাজের নাম (যেমন: কুল্যান্ট পরিবর্তন)</label>
+                        <input type="text" id="rule-name" placeholder="কাজের নাম লিখুন" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">বদলির মেয়াদ (মাসে)</label>
+                            <input type="number" id="rule-months" placeholder="যেমন: 6" required min="1" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">বদলির কিলোমিটার (KM)</label>
+                            <input type="number" id="rule-km" placeholder="যেমন: 5000" required min="0" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> নোট: মাস অথবা কিলোমিটার, যেটি আগে আসবে সেই অনুযায়ী অ্যালার্ট দেওয়া হবে।</p>
+                    <button type="submit" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-lg transition mt-4 shadow-md">
+                        <i class="fa-solid fa-plus mr-2"></i> কাজের ধরন যুক্ত করুন
+                    </button>
+                </form>
+            </div>
+
+            <!-- Existing Rules List -->
+            <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50 px-5 py-3 border-b border-slate-200">
+                    <h2 class="font-bold text-slate-800 flex items-center">
+                        <i class="fa-solid fa-list-check text-slate-600 mr-2"></i> সংরক্ষিত কাজের ধরনসমূহ
+                    </h2>
+                </div>
+                <ul id="rules-list" class="divide-y divide-slate-100">
+                    <!-- Dynamic rules inserted here -->
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- App Logic Scripts -->
+    <script>
+        // --- Default Maintenance Types ---
+        const defaultRules = [
+            { id: 'rule_1', name: 'ইঞ্জিন অয়েল', months: 6, km: 5000 },
+            { id: 'rule_2', name: 'ট্রান্সমিশন অয়েল', months: 12, km: 18000 },
+            { id: 'rule_3', name: 'ব্রেক ফ্লুইড', months: 12, km: 10000 },
+            { id: 'rule_4', name: 'এয়ার ফিল্টার', months: 6, km: 10000 },
+            { id: 'rule_5', name: 'গিয়ার অয়েল', months: 12, km: 15000 },
+            { id: 'rule_6', name: 'সাধারণ সার্ভিসিং', months: 3, km: 3000 }
+        ];
+
+        // --- State Management (Local Storage) ---
+        let vehicles = JSON.parse(localStorage.getItem('9eb_vehicles')) || [];
+        let maintenanceLog = JSON.parse(localStorage.getItem('9eb_maintenance')) || [];
+        // Load custom task types, if none, load defaults
+        let taskRules = JSON.parse(localStorage.getItem('9eb_task_rules'));
+        if (!taskRules || taskRules.length === 0) {
+            taskRules = [...defaultRules];
+            localStorage.setItem('9eb_task_rules', JSON.stringify(taskRules));
+        }
+
+        // --- Tab Navigation ---
+        function switchTab(tabId) {
+            const tabs = ['dashboard', 'add-maintenance', 'vehicles', 'settings'];
+            tabs.forEach(t => {
+                document.getElementById(`sec-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('tab-active', 'text-green-800');
+            });
+            document.getElementById(`sec-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.add('tab-active', 'text-green-800');
+            updateUI(); 
+        }
+
+        // --- Logic: Calculate Next Due ---
+        function calculateNextDue(ruleId, dateStr, currentKm) {
+            const rule = taskRules.find(r => r.id === ruleId);
+            if(!rule) return null;
+
+            const date = new Date(dateStr);
+            date.setMonth(date.getMonth() + parseInt(rule.months));
+            const nextKm = parseInt(currentKm) + parseInt(rule.km);
+
+            return {
+                nextDate: date.toISOString().split('T')[0],
+                nextKm: nextKm,
+                ruleName: rule.name
+            };
+        }
+
+        // --- Form: Add New Rule (Task Type) ---
+        document.getElementById('form-rule').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('rule-name').value.trim();
+            const months = document.getElementById('rule-months').value;
+            const km = document.getElementById('rule-km').value;
+
+            // Check duplicate name
+            if (taskRules.some(r => r.name.toLowerCase() === name.toLowerCase())) {
+                alert('এই নামের কাজের ধরন আগেই যুক্ত করা আছে!');
+                return;
+            }
+
+            const newRule = {
+                id: 'custom_' + Date.now(),
+                name: name,
+                months: parseInt(months),
+                km: parseInt(km)
+            };
+
+            taskRules.push(newRule);
+            saveData();
+            document.getElementById('form-rule').reset();
+            updateUI();
+            alert('নতুন কাজের ধরন সফলভাবে যুক্ত হয়েছে।');
+        });
+
+        // --- Delete Rule ---
+        function deleteRule(id) {
+            if(confirm('আপনি কি এই কাজের ধরনটি মুছে ফেলতে চান?')) {
+                taskRules = taskRules.filter(r => r.id !== id);
+                saveData();
+                updateUI();
+            }
+        }
+
+        // --- Form: Add Vehicle ---
+        document.getElementById('form-vehicle').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const baNo = document.getElementById('veh-ba').value.trim();
+            const type = document.getElementById('veh-type').value;
+
+            if (vehicles.some(v => v.baNo === baNo)) {
+                alert('এই বিএ নম্বরের গাড়িটি আগেই যুক্ত করা আছে!');
+                return;
+            }
+
+            vehicles.push({ id: 'veh_' + Date.now(), baNo, type, addedDate: new Date().toISOString() });
+            saveData();
+            document.getElementById('form-vehicle').reset();
+            updateUI();
+            alert('গাড়ি সফলভাবে যুক্ত হয়েছে।');
+        });
+
+        // --- Form: Add Maintenance ---
+        document.getElementById('form-maintenance').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const vehicleId = document.getElementById('maint-vehicle').value;
+            const ruleId = document.getElementById('maint-type').value;
+            const dateStr = document.getElementById('maint-date').value;
+            const km = document.getElementById('maint-km').value;
+
+            const due = calculateNextDue(ruleId, dateStr, km);
+            if(!due) { alert('ত্রুটি: কাজের ধরন পাওয়া যায়নি!'); return; }
+
+            const record = {
+                id: 'rec_' + Date.now(),
+                vehicleId,
+                vehicleBa: vehicles.find(v => v.id === vehicleId).baNo,
+                typeId: ruleId,
+                typeName: due.ruleName,
+                doneDate: dateStr,
+                doneKm: km,
+                nextDate: due.nextDate,
+                nextKm: due.nextKm
+            };
+
+            maintenanceLog.push(record);
+            maintenanceLog.sort((a, b) => new Date(b.doneDate) - new Date(a.doneDate));
+            
+            saveData();
+            document.getElementById('form-maintenance').reset();
+            updateUI();
+            
+            alert(`রেকর্ড সংরক্ষিত হয়েছে!\nপরবর্তী পরিবর্তনের তারিখ: ${formatDate(due.nextDate)}\nপরবর্তী কিলোমিটার: ${due.nextKm} KM`);
+            switchTab('dashboard');
+        });
+
+        // --- Delete Records ---
+        function deleteVehicle(id) {
+            if(confirm('গাড়িটি মুছে ফেলতে চান? এর সকল রেকর্ডও মুছে যাবে।')) {
+                vehicles = vehicles.filter(v => v.id !== id);
+                maintenanceLog = maintenanceLog.filter(m => m.vehicleId !== id);
+                saveData();
+                updateUI();
+            }
+        }
+
+        function deleteMaintenance(id) {
+            if(confirm('এই মেইনটেন্যান্স রেকর্ডটি মুছে ফেলতে চান?')) {
+                maintenanceLog = maintenanceLog.filter(m => m.id !== id);
+                saveData();
+                updateUI();
+            }
+        }
+
+        // --- Render UI ---
+        function updateUI() {
+            renderVehicleDropdown();
+            renderTaskTypesDropdown();
+            renderVehiclesList();
+            renderMaintenanceHistory();
+            renderDashboardAlerts();
+            renderRulesList();
+        }
+
+        function renderVehicleDropdown() {
+            const select = document.getElementById('maint-vehicle');
+            select.innerHTML = '<option value="" disabled selected>গাড়ি সিলেক্ট করুন...</option>';
+            vehicles.forEach(v => {
+                select.innerHTML += `<option value="${v.id}">${v.baNo} (${v.type})</option>`;
+            });
+        }
+
+        function renderTaskTypesDropdown() {
+            const select = document.getElementById('maint-type');
+            select.innerHTML = '<option value="" disabled selected>কাজের ধরন সিলেক্ট করুন...</option>';
+            taskRules.forEach(r => {
+                select.innerHTML += `<option value="${r.id}">${r.name} (${r.months} মাস / ${r.km} কি.মি)</option>`;
+            });
+        }
+
+        function renderRulesList() {
+            const list = document.getElementById('rules-list');
+            list.innerHTML = '';
+            taskRules.forEach(r => {
+                list.innerHTML += `
+                    <li class="px-5 py-4 flex justify-between items-center hover:bg-slate-50">
+                        <div>
+                            <h4 class="font-bold text-slate-800">${r.name}</h4>
+                            <p class="text-xs text-slate-500 mt-1">মেয়াদ: ${r.months} মাস | কিলোমিটার: ${r.km} KM</p>
+                        </div>
+                        <button onclick="deleteRule('${r.id}')" class="text-red-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50 transition" title="ডিলিট করুন">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </li>
+                `;
+            });
+        }
+
+        function renderVehiclesList() {
+            const container = document.getElementById('vehicles-container');
+            container.innerHTML = '';
+            document.getElementById('stat-total-vehicles').innerText = vehicles.length;
+
+            if (vehicles.length === 0) {
+                container.innerHTML = `<p class="col-span-2 text-center text-slate-500 py-4">কোনো গাড়ি যুক্ত করা হয়নি।</p>`;
+                return;
+            }
+
+            vehicles.forEach(v => {
+                const latestMaint = maintenanceLog.find(m => m.vehicleId === v.id);
+                let maintStatus = '<span class="text-xs text-slate-400">কোনো রেকর্ড নেই</span>';
+                if(latestMaint) {
+                    maintStatus = `<div class="text-xs mt-2 p-2 bg-slate-50 rounded">
+                        <span class="font-bold text-slate-600">সর্বশেষ কাজ:</span> ${latestMaint.typeName}<br>
+                        <span class="text-slate-500">তারিখ: ${formatDate(latestMaint.doneDate)} | ${latestMaint.doneKm} KM</span>
+                    </div>`;
+                }
+
+                container.innerHTML += `
+                    <div class="bg-white p-4 rounded-xl shadow border border-slate-200 flex justify-between items-start">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <i class="fa-solid fa-truck text-blue-600"></i>
+                                <h3 class="font-bold text-lg text-slate-800">${v.baNo}</h3>
+                            </div>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">${v.type}</span>
+                            ${maintStatus}
+                        </div>
+                        <button onclick="deleteVehicle('${v.id}')" class="text-slate-300 hover:text-red-500 transition px-2">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function renderMaintenanceHistory() {
+            const list = document.getElementById('maintenance-history-list');
+            list.innerHTML = '';
+            if(maintenanceLog.length === 0) {
+                list.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">কোনো রেকর্ড নেই।</td></tr>`;
+                return;
+            }
+
+            maintenanceLog.forEach(m => {
+                list.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 border-b font-bold text-slate-700">${m.vehicleBa}</td>
+                        <td class="p-3 border-b">${m.typeName}</td>
+                        <td class="p-3 border-b text-slate-600 whitespace-nowrap">
+                            ${formatDate(m.doneDate)}<br>
+                            <span class="text-xs bg-slate-200 px-1 rounded">${m.doneKm} KM</span>
+                        </td>
+                        <td class="p-3 border-b text-red-700 font-semibold bg-red-50 whitespace-nowrap">
+                            ${formatDate(m.nextDate)}<br>
+                            <span class="text-xs">${m.nextKm} KM</span>
+                        </td>
+                        <td class="p-3 border-b text-center">
+                            <button onclick="deleteMaintenance('${m.id}')" class="text-slate-400 hover:text-red-500" title="ডিলিট">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderDashboardAlerts() {
+            const container = document.getElementById('alerts-container');
+            container.innerHTML = '';
+            const today = new Date();
+            let overdueCount = 0;
+            let upcomingCount = 0;
+            let needsNotification = [];
+
+            const latestRecords = {};
+            maintenanceLog.forEach(m => {
+                const key = `${m.vehicleId}_${m.typeId}`; // grouped by vehicle AND task type
+                if (!latestRecords[key]) {
+                    latestRecords[key] = m;
+                } else if (new Date(m.doneDate) > new Date(latestRecords[key].doneDate)) {
+                    latestRecords[key] = m;
+                }
+            });
+
+            const alerts = Object.values(latestRecords).map(m => {
+                const nextDate = new Date(m.nextDate);
+                const diffTime = nextDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return { ...m, diffDays };
+            }).sort((a, b) => a.diffDays - b.diffDays);
+
+            alerts.forEach(m => {
+                if (m.diffDays <= 0) {
+                    overdueCount++;
+                    needsNotification.push(`${m.vehicleBa}: ${m.typeName} বকেয়া!`);
+                    container.innerHTML += `
+                        <div class="bg-red-100 border-l-4 border-red-600 p-3 rounded shadow-sm flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold text-red-800">${m.vehicleBa} - <span class="font-normal">${m.typeName}</span></h4>
+                                <p class="text-sm text-red-700 mt-1">
+                                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> 
+                                    ${m.diffDays === 0 ? 'আজই পরিবর্তন করতে হবে!' : `${Math.abs(m.diffDays)} দিন পার হয়ে গেছে!`} 
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-xs text-slate-500">লক্ষ্যমাত্রা</span>
+                                <span class="font-bold text-slate-700 whitespace-nowrap">${formatDate(m.nextDate)}<br>${m.nextKm} KM</span>
+                            </div>
+                        </div>
+                    `;
+                } else if (m.diffDays <= 30) {
+                    upcomingCount++;
+                    container.innerHTML += `
+                        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded shadow-sm flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold text-yellow-800">${m.vehicleBa} - <span class="font-normal">${m.typeName}</span></h4>
+                                <p class="text-sm text-yellow-700 mt-1">
+                                    <i class="fa-solid fa-clock mr-1"></i> আর মাত্র ${m.diffDays} দিন বাকি
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-xs text-slate-500">লক্ষ্যমাত্রা</span>
+                                <span class="font-bold text-slate-700 whitespace-nowrap">${formatDate(m.nextDate)}<br>${m.nextKm} KM</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            if (container.innerHTML === '') {
+                container.innerHTML = `<div class="p-6 text-center text-slate-500 bg-slate-50 rounded-lg"><i class="fa-solid fa-circle-check text-green-500 text-2xl mb-2 block"></i>এই মুহূর্তে জরুরি কোনো কাজ বকেয়া নেই।</div>`;
+            }
+
+            document.getElementById('stat-overdue').innerText = overdueCount;
+            document.getElementById('stat-upcoming').innerText = upcomingCount;
+
+            if(needsNotification.length > 0) {
+                sendBrowserNotification(needsNotification.length, needsNotification[0]);
+            }
+        }
+
+        // --- Notifications ---
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        alert("নোটিফিকেশন পারমিশন দেওয়া হয়েছে!");
+                        new Notification("৯ ইস্ট বেঙ্গল MT", { body: "নোটিফিকেশন সিস্টেম সচল আছে।" });
+                    } else {
+                        alert("নোটিফিকেশন পারমিশন দেওয়া হয়নি।");
+                    }
+                });
+            } else {
+                alert("আপনার ব্রাউজার পুশ নোটিফিকেশন সাপোর্ট করে না।");
+            }
+        }
+
+        function sendBrowserNotification(count, messagePreview) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                const lastNotified = localStorage.getItem('9eb_last_notify_date');
+                const todayStr = new Date().toISOString().split('T')[0];
+                
+                if (lastNotified !== todayStr) {
+                    new Notification("MT মেইনটেন্যান্স অ্যালার্ট!", {
+                        body: `আপনার ${count} টি কাজ বকেয়া আছে।\n${messagePreview}`,
+                        icon: "https://cdn-icons-png.flaticon.com/512/792/792119.png"
+                    });
+                    localStorage.setItem('9eb_last_notify_date', todayStr);
+                }
+            }
+        }
+
+        // --- Utility ---
+        function saveData() {
+            localStorage.setItem('9eb_vehicles', JSON.stringify(vehicles));
+            localStorage.setItem('9eb_maintenance', JSON.stringify(maintenanceLog));
+            localStorage.setItem('9eb_task_rules', JSON.stringify(taskRules));
+        }
+
+        function formatDate(dateStr) {
+            if(!dateStr) return '';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        // --- Initialize ---
+        updateUI();
+        if ("Notification" in window && Notification.permission === "default") {
+            setTimeout(requestNotificationPermission, 3000);
+        }
+    </script>
+</body>
+</html>
