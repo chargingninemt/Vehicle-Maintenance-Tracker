@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>9 EB MT Tracker V8</title>
+    <title>9 EB MT Tracker V10</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -22,7 +22,6 @@
         .grad-primary { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
         .grad-danger { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); }
         
-        /* Clicakble cards hover effect */
         .clickable-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
     </style>
 </head>
@@ -32,7 +31,8 @@
     <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="px-4 py-3 flex justify-between items-center max-w-5xl mx-auto">
             <div class="flex items-center gap-3">
-                <img src="https://cdn-icons-png.flaticon.com/512/792/792119.png" alt="Logo" class="w-10 h-10 object-contain p-1 bg-emerald-50 rounded-full">
+                <!-- Updated Brand Logo -->
+                <img src="logo.jpg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/792/792119.png'" alt="Logo" class="w-10 h-10 object-cover p-0.5 bg-white border-2 border-emerald-500 rounded-full shadow-sm">
                 <div>
                     <h1 class="font-bold text-lg text-slate-800 leading-tight">৯ ইস্ট বেঙ্গল (Smart MT)</h1>
                     <p class="text-xs text-emerald-600 font-medium" id="sync-status">● ক্লাউড কানেক্টেড</p>
@@ -205,6 +205,7 @@
         </div>
     </nav>
 
+    <!-- Modals (Lists) -->
     <!-- Modal: All Vehicles List -->
     <div id="all-vehicles-modal" class="hidden fixed inset-0 bg-slate-900/70 z-[100] flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
@@ -262,8 +263,7 @@
         </div>
     </div>
 
-    <!-- Other Modals (Add Vehicle, KM Update, Toast, Confirm) -->
-    <!-- Add Vehicle -->
+    <!-- Modal: Add Vehicle -->
     <div id="add-veh-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-lg text-slate-800">নতুন গাড়ি যোগ</h3><button onclick="document.getElementById('add-veh-modal').classList.add('hidden')" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-500 transition"><i class="fa-solid fa-xmark"></i></button></div>
@@ -274,7 +274,7 @@
             </form>
         </div>
     </div>
-    <!-- KM Update -->
+    <!-- Modal: KM Update -->
     <div id="km-update-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl border-t-4 border-emerald-500">
             <div class="flex justify-between items-center mb-2"><h3 class="font-bold text-lg text-slate-800">মিটার রিডিং আপডেট</h3><button onclick="window.closeKmModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
@@ -408,29 +408,35 @@
         };
 
         window.downloadAllVehiclesReport = () => {
-            let rows = vehicles.map((v, i) => `<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:center;">${i+1}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:bold;">${v.baNo}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0">${v.type}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:right;">${v.currentKm || 0} KM</td></tr>`).join('');
-            if(vehicles.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;">কোনো রেকর্ড নেই</td></tr>`;
+            let rows = vehicles.map((v, i) => `<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:center;position:relative;z-index:10;">${i+1}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:bold;position:relative;z-index:10;">${v.baNo}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${v.type}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:right;position:relative;z-index:10;">${v.currentKm || 0} KM</td></tr>`).join('');
+            if(vehicles.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;position:relative;z-index:10;">কোনো রেকর্ড নেই</td></tr>`;
             
             const html = `
-            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; width: 100%; box-sizing: border-box;">
-                <div style="text-align:center; border-bottom:3px solid #059669; padding-bottom:15px; margin-bottom:20px">
-                    <h2 style="color:#059669; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
-                    <p style="margin:5px 0 0 0; font-size:16px">সকল যানবাহনের তালিকা</p>
-                    <p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p>
-                </div>
-                <table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px">
-                    <thead>
-                        <tr style="background:#f1f5f9">
-                            <th style="padding:10px; border-bottom:2px solid #cbd5e1;text-align:center;">ক্র.নং</th>
-                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">বিএ নম্বর</th>
-                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">গাড়ির ধরন</th>
-                            <th style="padding:10px; border-bottom:2px solid #cbd5e1;text-align:right;">বর্তমান মিটার (কি.মি)</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-                <div style="margin-top:60px; text-align:right">
-                    <p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p>
+            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; padding: 30px 40px; min-height:1000px; position: relative;">
+                
+                <!-- PDF Watermark Image -->
+                <img src="logo.jpg" style="position: absolute; top: 400px; left: 50%; transform: translate(-50%, -50%); width: 450px; opacity: 0.12; z-index: 0;" />
+                
+                <div style="position: relative; z-index: 10;">
+                    <div style="text-align:center; border-bottom:3px solid #059669; padding-bottom:15px; margin-bottom:20px">
+                        <h2 style="color:#059669; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
+                        <p style="margin:5px 0 0 0; font-size:16px; font-weight:bold;">সকল যানবাহনের তালিকা</p>
+                        <p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p>
+                    </div>
+                    <table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px">
+                        <thead>
+                            <tr style="background:#f1f5f9">
+                                <th style="padding:10px; border-bottom:2px solid #cbd5e1;text-align:center;">ক্র.নং</th>
+                                <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">বিএ নম্বর</th>
+                                <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">গাড়ির ধরন</th>
+                                <th style="padding:10px; border-bottom:2px solid #cbd5e1;text-align:right;">বর্তমান মিটার (কি.মি)</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                    <div style="margin-top:60px; text-align:right">
+                        <p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p>
+                    </div>
                 </div>
             </div>`;
             generatePDF(html, 'All_Vehicles_Report.pdf');
@@ -476,29 +482,35 @@
         };
 
         window.downloadOverdueReport = () => {
-            let rows = overdueItemsData.map(item => `<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:bold;">${item.vehicleBa} <span style="font-weight:normal;font-size:12px;color:#64748b">(${item.type})</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0">${item.typeName}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0">${formatDate(item.nextDate)} <br> <span style="font-size:12px">(${item.nextKm} KM)</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#dc2626;font-weight:bold;">${item.reason}</td></tr>`).join('');
-            if(overdueItemsData.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;">কোনো ওভারডিউ কাজ নেই</td></tr>`;
+            let rows = overdueItemsData.map(item => `<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:bold;position:relative;z-index:10;">${item.vehicleBa} <span style="font-weight:normal;font-size:12px;color:#64748b">(${item.type})</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${item.typeName}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${formatDate(item.nextDate)} <br> <span style="font-size:12px">(${item.nextKm} KM)</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#dc2626;font-weight:bold;position:relative;z-index:10;">${item.reason}</td></tr>`).join('');
+            if(overdueItemsData.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;position:relative;z-index:10;">কোনো ওভারডিউ কাজ নেই</td></tr>`;
             
             const html = `
-            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; width: 100%; box-sizing: border-box;">
-                <div style="text-align:center; border-bottom:3px solid #dc2626; padding-bottom:15px; margin-bottom:20px">
-                    <h2 style="color:#dc2626; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
-                    <p style="margin:5px 0 0 0; font-size:16px; font-weight:bold;">ওভারডিউ কাজের তালিকা (জরুরি)</p>
-                    <p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p>
-                </div>
-                <table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px">
-                    <thead>
-                        <tr style="background:#fee2e2">
-                            <th style="padding:10px; border-bottom:2px solid #fca5a5; text-align:left;">গাড়ি (ধরন)</th>
-                            <th style="padding:10px; border-bottom:2px solid #fca5a5; text-align:left;">কাজের নাম</th>
-                            <th style="padding:10px; border-bottom:2px solid #fca5a5; text-align:left;">লক্ষ্যমাত্রা (তারিখ ও কি.মি)</th>
-                            <th style="padding:10px; border-bottom:2px solid #fca5a5; color:#b91c1c; text-align:left;">ওভারডিউ স্ট্যাটাস</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-                <div style="margin-top:60px; text-align:right">
-                    <p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p>
+            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; padding: 30px 40px; min-height:1000px; position: relative;">
+                
+                <!-- PDF Watermark Image -->
+                <img src="logo.jpg" style="position: absolute; top: 400px; left: 50%; transform: translate(-50%, -50%); width: 450px; opacity: 0.12; z-index: 0;" />
+
+                <div style="position: relative; z-index: 10;">
+                    <div style="text-align:center; border-bottom:3px solid #dc2626; padding-bottom:15px; margin-bottom:20px">
+                        <h2 style="color:#dc2626; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
+                        <p style="margin:5px 0 0 0; font-size:16px; font-weight:bold;">ওভারডিউ কাজের তালিকা (জরুরি)</p>
+                        <p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p>
+                    </div>
+                    <table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px">
+                        <thead>
+                            <tr style="background:#fee2e2">
+                                <th style="padding:10px; border-bottom:2px solid #fca5a5; text-align:left;">গাড়ি (ধরন)</th>
+                                <th style="padding:10px; border-bottom:2px solid #fca5a5; text-align:left;">কাজের নাম</th>
+                                <th style="padding:10px; border-bottom:2px solid #fca5a5; text-align:left;">লক্ষ্যমাত্রা (তারিখ ও কি.মি)</th>
+                                <th style="padding:10px; border-bottom:2px solid #fca5a5; color:#b91c1c; text-align:left;">ওভারডিউ স্ট্যাটাস</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                    <div style="margin-top:60px; text-align:right">
+                        <p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p>
+                    </div>
                 </div>
             </div>`;
             generatePDF(html, 'Overdue_Maintenance_Report.pdf');
@@ -549,53 +561,59 @@
         };
 
         window.downloadUpcomingReport = () => {
-            let rows = upcomingItemsData.map(item => `<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:bold;">${item.vehicleBa} <span style="font-weight:normal;font-size:12px;color:#64748b">(${item.type})</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0">${item.typeName}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0">${formatDate(item.nextDate)} <br> <span style="font-size:12px">(${item.nextKm} KM)</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#d97706;font-weight:bold;">${item.reason}</td></tr>`).join('');
-            if(upcomingItemsData.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;">কোনো আসন্ন কাজ নেই</td></tr>`;
+            let rows = upcomingItemsData.map(item => `<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:bold;position:relative;z-index:10;">${item.vehicleBa} <span style="font-weight:normal;font-size:12px;color:#64748b">(${item.type})</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${item.typeName}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${formatDate(item.nextDate)} <br> <span style="font-size:12px">(${item.nextKm} KM)</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#d97706;font-weight:bold;position:relative;z-index:10;">${item.reason}</td></tr>`).join('');
+            if(upcomingItemsData.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;position:relative;z-index:10;">কোনো আসন্ন কাজ নেই</td></tr>`;
             
             const html = `
-            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; width: 100%; box-sizing: border-box;">
-                <div style="text-align:center; border-bottom:3px solid #d97706; padding-bottom:15px; margin-bottom:20px">
-                    <h2 style="color:#d97706; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
-                    <p style="margin:5px 0 0 0; font-size:16px; font-weight:bold;">আসন্ন কাজের তালিকা</p>
-                    <p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p>
-                </div>
-                <table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px">
-                    <thead>
-                        <tr style="background:#fef3c7">
-                            <th style="padding:10px; border-bottom:2px solid #fcd34d; text-align:left;">গাড়ি (ধরন)</th>
-                            <th style="padding:10px; border-bottom:2px solid #fcd34d; text-align:left;">কাজের নাম</th>
-                            <th style="padding:10px; border-bottom:2px solid #fcd34d; text-align:left;">লক্ষ্যমাত্রা (তারিখ ও কি.মি)</th>
-                            <th style="padding:10px; border-bottom:2px solid #fcd34d; color:#b45309; text-align:left;">আসন্ন স্ট্যাটাস</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-                <div style="margin-top:60px; text-align:right">
-                    <p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p>
+            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; padding: 30px 40px; min-height:1000px; position: relative;">
+                
+                <!-- PDF Watermark Image -->
+                <img src="logo.jpg" style="position: absolute; top: 400px; left: 50%; transform: translate(-50%, -50%); width: 450px; opacity: 0.12; z-index: 0;" />
+
+                <div style="position: relative; z-index: 10;">
+                    <div style="text-align:center; border-bottom:3px solid #d97706; padding-bottom:15px; margin-bottom:20px">
+                        <h2 style="color:#d97706; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
+                        <p style="margin:5px 0 0 0; font-size:16px; font-weight:bold;">আসন্ন কাজের তালিকা</p>
+                        <p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p>
+                    </div>
+                    <table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px">
+                        <thead>
+                            <tr style="background:#fef3c7">
+                                <th style="padding:10px; border-bottom:2px solid #fcd34d; text-align:left;">গাড়ি (ধরন)</th>
+                                <th style="padding:10px; border-bottom:2px solid #fcd34d; text-align:left;">কাজের নাম</th>
+                                <th style="padding:10px; border-bottom:2px solid #fcd34d; text-align:left;">লক্ষ্যমাত্রা (তারিখ ও কি.মি)</th>
+                                <th style="padding:10px; border-bottom:2px solid #fcd34d; color:#b45309; text-align:left;">আসন্ন স্ট্যাটাস</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                    <div style="margin-top:60px; text-align:right">
+                        <p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p>
+                    </div>
                 </div>
             </div>`;
             generatePDF(html, 'Upcoming_Maintenance_Report.pdf');
         };
 
-        // FIXED PDF GENERATOR FOR PERFECT A4 FIT
+        // FIXED PDF GENERATOR WITH WATERMARK SUPPORT
         function generatePDF(htmlContent, fileName) {
             const div = document.createElement('div'); 
             div.innerHTML = htmlContent; 
             
-            // Render it explicitly offscreen with A4 pixel width approx
+            // Set explicit width for perfect A4 fitting
             div.style.position = 'absolute'; 
             div.style.top = '-9999px'; 
-            div.style.width = '794px'; // 96 DPI A4 width
+            div.style.width = '794px'; 
             div.style.backgroundColor = 'white';
             
             document.body.appendChild(div);
             window.showToast("পিডিএফ প্রস্তুত হচ্ছে, অপেক্ষা করুন...");
             
             const opt = { 
-                margin:       [0.5, 0.4, 0.5, 0.4], // [top, left, bottom, right] in inches
+                margin:       [0.5, 0.4, 0.5, 0.4], 
                 filename:     fileName, 
                 image:        { type: 'jpeg', quality: 0.98 }, 
-                html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 }, 
+                html2canvas:  { scale: 2, useCORS: true, logging: false }, 
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' } 
             };
             
@@ -612,38 +630,45 @@
 
         window.downloadVehicleReport = (vId) => {
             const v = vehicles.find(x => x.id === vId); const logs = maintenanceLog.filter(m => m.vehicleId === vId);
-            let rows = logs.map(m => `<tr><td style="padding:10px; border-bottom:1px solid #e2e8f0">${formatDate(m.doneDate)}</td><td style="padding:10px; border-bottom:1px solid #e2e8f0; font-weight:bold;">${m.typeName}</td><td style="padding:10px; border-bottom:1px solid #e2e8f0">${m.doneKm} KM</td><td style="padding:10px; border-bottom:1px solid #e2e8f0; color:#dc2626">${formatDate(m.nextDate)}</td><td style="padding:10px; border-bottom:1px solid #e2e8f0; color:#dc2626">${m.nextKm} KM</td></tr>`).join('');
-            if(logs.length === 0) rows = `<tr><td colspan="5" style="padding:15px; text-align:center; color:#64748b">কোনো রেকর্ড নেই</td></tr>`;
+            let rows = logs.map(m => `<tr><td style="padding:10px; border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${formatDate(m.doneDate)}</td><td style="padding:10px; border-bottom:1px solid #e2e8f0; font-weight:bold;position:relative;z-index:10;">${m.typeName}</td><td style="padding:10px; border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${m.doneKm} KM</td><td style="padding:10px; border-bottom:1px solid #e2e8f0; color:#dc2626;position:relative;z-index:10;">${formatDate(m.nextDate)}</td><td style="padding:10px; border-bottom:1px solid #e2e8f0; color:#dc2626;position:relative;z-index:10;">${m.nextKm} KM</td></tr>`).join('');
+            if(logs.length === 0) rows = `<tr><td colspan="5" style="padding:15px; text-align:center; color:#64748b;position:relative;z-index:10;">কোনো রেকর্ড নেই</td></tr>`;
             
             const html = `
-            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; width: 100%; box-sizing: border-box;">
-                <div style="text-align:center; border-bottom:3px solid #059669; padding-bottom:15px; margin-bottom:20px">
-                    <h2 style="color:#059669; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
-                    <p style="margin:5px 0 0 0; font-size:16px">যানবাহন রক্ষণাবেক্ষণ লগ (এমটি শাখা)</p>
-                </div>
-                <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #e2e8f0">
-                    <table style="width:100%">
-                        <tr>
-                            <td style="text-align:left;"><strong>বিএ নম্বর:</strong> ${v.baNo}</td>
-                            <td style="text-align:left;"><strong>গাড়ির ধরন:</strong> ${v.type}</td>
-                            <td style="text-align:left;"><strong>বর্তমান মিটার:</strong> ${v.currentKm || 0} KM</td>
-                        </tr>
+            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; padding: 30px 40px; min-height:1000px; position: relative;">
+                
+                <!-- PDF Watermark Image -->
+                <img src="logo.jpg" style="position: absolute; top: 400px; left: 50%; transform: translate(-50%, -50%); width: 450px; opacity: 0.12; z-index: 0;" />
+
+                <div style="position: relative; z-index: 10;">
+                    <div style="text-align:center; border-bottom:3px solid #059669; padding-bottom:15px; margin-bottom:20px">
+                        <h2 style="color:#059669; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
+                        <p style="margin:5px 0 0 0; font-size:16px; font-weight:bold;">যানবাহন রক্ষণাবেক্ষণ লগ (এমটি শাখা)</p>
+                        <p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p>
+                    </div>
+                    <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #e2e8f0">
+                        <table style="width:100%">
+                            <tr>
+                                <td style="text-align:left;"><strong>বিএ নম্বর:</strong> ${v.baNo}</td>
+                                <td style="text-align:left;"><strong>গাড়ির ধরন:</strong> ${v.type}</td>
+                                <td style="text-align:left;"><strong>বর্তমান মিটার:</strong> ${v.currentKm || 0} KM</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px">
+                        <thead>
+                            <tr style="background:#f1f5f9">
+                                <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">কাজের তারিখ</th>
+                                <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">কাজের ধরন</th>
+                                <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">মিটার রিডিং</th>
+                                <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">পরবর্তী তারিখ</th>
+                                <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">পরবর্তী মিটার</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
                     </table>
-                </div>
-                <table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px">
-                    <thead>
-                        <tr style="background:#f1f5f9">
-                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">কাজের তারিখ</th>
-                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">কাজের ধরন</th>
-                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">মিটার রিডিং</th>
-                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">পরবর্তী তারিখ</th>
-                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">পরবর্তী মিটার</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-                <div style="margin-top:60px; text-align:right">
-                    <p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p>
+                    <div style="margin-top:60px; text-align:right">
+                        <p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p>
+                    </div>
                 </div>
             </div>`;
             generatePDF(html, `MT_Report_${v.baNo}.pdf`);
