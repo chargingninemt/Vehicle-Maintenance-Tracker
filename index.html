@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>9 EB MT Tracker V7</title>
+    <title>9 EB MT Tracker V8</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -61,21 +61,18 @@
             <!-- 1. Dashboard Tab -->
             <section id="sec-dashboard" class="block animate-fade-in">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <!-- CLICKABLE: Total Vehicles -->
                     <div onclick="window.openAllVehiclesModal()" class="grad-primary rounded-2xl p-4 md:p-5 text-white shadow-lg shadow-emerald-200 col-span-2 md:col-span-2 clickable-card cursor-pointer transition-all duration-300">
                         <div class="flex justify-between items-start">
                             <div><p class="text-emerald-100 text-sm font-medium mb-1">মোট গাড়ি (তালিকা দেখুন)</p><h3 class="text-4xl font-bold" id="stat-total-vehicles">0</h3></div>
                             <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl"><i class="fa-solid fa-truck"></i></div>
                         </div>
                     </div>
-                    <!-- CLICKABLE: Overdue -->
                     <div onclick="window.openOverdueModal()" class="grad-danger rounded-2xl p-4 text-white shadow-lg shadow-red-200 clickable-card cursor-pointer transition-all duration-300">
                         <div class="flex justify-between items-start">
                             <div><p class="text-red-100 text-xs font-medium mb-1">ওভারডিউ (দেখুন)</p><h3 class="text-3xl font-bold" id="stat-overdue">0</h3></div>
                             <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation"></i></div>
                         </div>
                     </div>
-                    <!-- CLICKABLE: Upcoming -->
                     <div onclick="window.openUpcomingModal()" class="bg-amber-500 rounded-2xl p-4 text-white shadow-lg shadow-amber-200 clickable-card cursor-pointer transition-all duration-300">
                         <div class="flex justify-between items-start">
                             <div><p class="text-amber-100 text-xs font-medium mb-1">আসন্ন (দেখুন)</p><h3 class="text-3xl font-bold" id="stat-upcoming-raw">0</h3></div>
@@ -186,7 +183,7 @@
             </section>
         </div>
 
-        <!-- Footer Section (NEW) -->
+        <!-- Footer Section -->
         <footer class="mt-12 mb-4 border-t border-slate-200 pt-6 text-center animate-fade-in">
             <p class="text-[11px] text-slate-500 font-medium tracking-wide">
                 &copy; <span id="current-year"></span> ৯ ইস্ট বেঙ্গল রেজিমেন্ট। সর্বস্বত্ব সংরক্ষিত।
@@ -323,10 +320,8 @@
         let vehicles = [], maintenanceLog = [], taskRules = [], vehicleTypes = [];
         let chartInstance = null;
 
-        // Set current year in footer
         document.getElementById('current-year').innerText = new Date().getFullYear();
 
-        // Custom UI Tools
         window.showToast = (msg, isErr=false) => {
             const t = document.createElement('div');
             t.className = `px-5 py-3 rounded-xl shadow-lg text-white text-sm font-bold flex items-center gap-3 ${isErr?'bg-red-600':'bg-slate-800'}`;
@@ -339,7 +334,6 @@
         window.closeConfirm = () => document.getElementById('confirm-modal').classList.add('hidden');
         window.executeConfirm = () => { if(pendingConfirm) pendingConfirm(); window.closeConfirm(); };
 
-        // Navigation
         window.switchTab = (tabId) => {
             const tabs = ['dashboard', 'add-maintenance', 'vehicles', 'settings'];
             tabs.forEach(t => {
@@ -357,7 +351,6 @@
             document.querySelectorAll('.vehicle-card').forEach(c => c.style.display = c.getAttribute('data-ba').toLowerCase().includes(query) ? '' : 'none');
         };
 
-        // Modals Operations
         window.openKmModal = (id, ba, km) => { document.getElementById('km-update-vid').value=id; document.getElementById('km-modal-bano').innerHTML=`<i class="fa-solid fa-truck-side mr-1"></i> BA No: ${ba}`; document.getElementById('km-update-val').value=km||''; document.getElementById('km-update-modal').classList.remove('hidden'); };
         window.closeKmModal = () => document.getElementById('km-update-modal').classList.add('hidden');
 
@@ -367,28 +360,24 @@
             if(vIndex > -1) { vehicles[vIndex].currentKm = newKm; try { await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'vehicles', vId), vehicles[vIndex]); window.showToast('মিটার রিডিং আপডেট হয়েছে!'); window.manualSyncToSheets(); window.closeKmModal(); } catch(err) { window.showToast('আপডেট ফেইল', true); } }
         });
 
-        // Form Submits
         const handleDbWrite = async (cName, id, data, msg) => { try { await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', cName, id), data); window.showToast(msg); window.manualSyncToSheets(); } catch(e) { window.showToast("সমস্যা হয়েছে", true); } };
         document.getElementById('form-vehicle').addEventListener('submit', (e) => { e.preventDefault(); const baNo = document.getElementById('veh-ba').value.trim(); if (vehicles.some(v => v.baNo === baNo)) return window.showToast('আগে যুক্ত করা হয়েছে!', true); handleDbWrite('vehicles', 'veh_'+Date.now(), { id: 'veh_'+Date.now(), baNo, type: document.getElementById('veh-type').value, currentKm: 0, addedDate: new Date().toISOString() }, 'গাড়ি যুক্ত হয়েছে'); e.target.reset(); document.getElementById('add-veh-modal').classList.add('hidden'); });
         document.getElementById('form-maintenance').addEventListener('submit', async (e) => { e.preventDefault(); const vId = document.getElementById('maint-vehicle').value, rId = document.getElementById('maint-type').value, dStr = document.getElementById('maint-date').value, km = parseInt(document.getElementById('maint-km').value); const rule = taskRules.find(r => r.id === rId); const vData = vehicles.find(v => v.id === vId); const nextDate = new Date(dStr); nextDate.setMonth(nextDate.getMonth() + parseInt(rule.months)); const nextKmTarget = km + parseInt(rule.km); if((vData.currentKm || 0) < km) { vData.currentKm = km; await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'vehicles', vData.id), vData); } handleDbWrite('maintenanceLog', 'rec_'+Date.now(), { id: 'rec_'+Date.now(), vehicleId: vId, vehicleBa: vData.baNo, typeId: rId, typeName: rule.name, doneDate: dStr, doneKm: km, nextDate: nextDate.toISOString().split('T')[0], nextKm: nextKmTarget }, 'রেকর্ড সেভ হয়েছে'); e.target.reset(); window.switchTab('dashboard'); });
         document.getElementById('form-rule').addEventListener('submit', (e)=>{ e.preventDefault(); handleDbWrite('taskRules', 'rule_'+Date.now(), { id:'rule_'+Date.now(), name:document.getElementById('rule-name').value, months:parseInt(document.getElementById('rule-months').value), km:parseInt(document.getElementById('rule-km').value) }, 'নিয়ম যোগ হয়েছে'); e.target.reset(); });
         document.getElementById('form-vtype').addEventListener('submit', (e)=>{ e.preventDefault(); handleDbWrite('vehicleTypes', 'vt_'+Date.now(), { id:'vt_'+Date.now(), name:document.getElementById('vtype-name').value }, 'ধরন যোগ হয়েছে'); e.target.reset(); });
 
-        // Deletes
         window.deleteRule = (id) => window.showConfirm('নিয়মটি মুছে ফেলতে চান?', () => handleDbDelete('taskRules', id));
         window.deleteVehicleType = (id) => window.showConfirm('ধরনটি মুছে ফেলতে চান?', () => handleDbDelete('vehicleTypes', id));
         window.deleteMaintenance = (id) => window.showConfirm('রেকর্ডটি মুছে ফেলতে চান?', () => handleDbDelete('maintenanceLog', id));
         window.deleteVehicle = (id) => window.showConfirm('গাড়ি ও এর সব রেকর্ড মুছবেন?', async () => { await handleDbDelete('vehicles', id); maintenanceLog.forEach(m => { if(m.vehicleId===id) handleDbDelete('maintenanceLog', m.id); }); });
         const handleDbDelete = async (cName, id) => { await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', cName, id)); window.manualSyncToSheets(); window.showToast('সফলভাবে মুছে ফেলা হয়েছে'); };
 
-        // Sync
         window.manualSyncToSheets = async () => {
             if(!SCRIPT_URL || SCRIPT_URL.includes("YOUR_GOOGLE")) return;
             document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> সিঙ্ক হচ্ছে...';
             try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ vehicles, maintenanceLog, taskRules, vehicleTypes }) }); document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-check text-emerald-500"></i> শিট আপডেটেড'; } catch(e){ document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-xmark text-red-500"></i> সিঙ্ক ফেইল'; }
         };
 
-        // Firebase Init
         signInAnonymously(auth);
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -399,12 +388,9 @@
             }
         });
 
-        // Date Formatter
         function formatDate(dStr) { if(!dStr) return ''; return new Date(dStr).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }); }
 
         // --- NEW MODALS LOGIC FOR REPORTS ---
-        
-        // 1. All Vehicles Report
         window.openAllVehiclesModal = () => {
             const tbody = document.getElementById('all-vehicles-tbody');
             if (vehicles.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">কোনো গাড়ি নেই</td></tr>`; } 
@@ -425,11 +411,31 @@
             let rows = vehicles.map((v, i) => `<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:center;">${i+1}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:bold;">${v.baNo}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0">${v.type}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:right;">${v.currentKm || 0} KM</td></tr>`).join('');
             if(vehicles.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;">কোনো রেকর্ড নেই</td></tr>`;
             
-            const html = `<div id="pdf-content" style="padding:40px; font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; width: 800px; margin: 0 auto;"><div style="text-align:center; border-bottom:3px solid #059669; padding-bottom:15px; margin-bottom:20px"><h2 style="color:#059669; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2><p style="margin:5px 0 0 0; font-size:16px">সকল যানবাহনের তালিকা</p><p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p></div><table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px"><thead><tr style="background:#f1f5f9"><th style="padding:10px; border-bottom:2px solid #cbd5e1;text-align:center;">ক্র.নং</th><th style="padding:10px; border-bottom:2px solid #cbd5e1">বিএ নম্বর</th><th style="padding:10px; border-bottom:2px solid #cbd5e1">গাড়ির ধরন</th><th style="padding:10px; border-bottom:2px solid #cbd5e1;text-align:right;">বর্তমান মিটার (কি.মি)</th></tr></thead><tbody>${rows}</tbody></table><div style="margin-top:60px; text-align:right"><p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p></div></div>`;
+            const html = `
+            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; width: 100%; box-sizing: border-box;">
+                <div style="text-align:center; border-bottom:3px solid #059669; padding-bottom:15px; margin-bottom:20px">
+                    <h2 style="color:#059669; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
+                    <p style="margin:5px 0 0 0; font-size:16px">সকল যানবাহনের তালিকা</p>
+                    <p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p>
+                </div>
+                <table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px">
+                    <thead>
+                        <tr style="background:#f1f5f9">
+                            <th style="padding:10px; border-bottom:2px solid #cbd5e1;text-align:center;">ক্র.নং</th>
+                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">বিএ নম্বর</th>
+                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">গাড়ির ধরন</th>
+                            <th style="padding:10px; border-bottom:2px solid #cbd5e1;text-align:right;">বর্তমান মিটার (কি.মি)</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div style="margin-top:60px; text-align:right">
+                    <p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p>
+                </div>
+            </div>`;
             generatePDF(html, 'All_Vehicles_Report.pdf');
         };
 
-        // 2. Overdue Items Report
         let overdueItemsData = [];
         window.openOverdueModal = () => {
             const today = new Date();
@@ -473,11 +479,31 @@
             let rows = overdueItemsData.map(item => `<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:bold;">${item.vehicleBa} <span style="font-weight:normal;font-size:12px;color:#64748b">(${item.type})</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0">${item.typeName}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0">${formatDate(item.nextDate)} <br> <span style="font-size:12px">(${item.nextKm} KM)</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#dc2626;font-weight:bold;">${item.reason}</td></tr>`).join('');
             if(overdueItemsData.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;">কোনো ওভারডিউ কাজ নেই</td></tr>`;
             
-            const html = `<div id="pdf-content" style="padding:40px; font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; width: 800px; margin: 0 auto;"><div style="text-align:center; border-bottom:3px solid #dc2626; padding-bottom:15px; margin-bottom:20px"><h2 style="color:#dc2626; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2><p style="margin:5px 0 0 0; font-size:16px; font-weight:bold;">ওভারডিউ কাজের তালিকা (জরুরি)</p><p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p></div><table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px"><thead><tr style="background:#fee2e2"><th style="padding:10px; border-bottom:2px solid #fca5a5">গাড়ি (ধরন)</th><th style="padding:10px; border-bottom:2px solid #fca5a5">কাজের নাম</th><th style="padding:10px; border-bottom:2px solid #fca5a5">লক্ষ্যমাত্রা (তারিখ ও কি.মি)</th><th style="padding:10px; border-bottom:2px solid #fca5a5;color:#b91c1c;">ওভারডিউ স্ট্যাটাস</th></tr></thead><tbody>${rows}</tbody></table><div style="margin-top:60px; text-align:right"><p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p></div></div>`;
+            const html = `
+            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; width: 100%; box-sizing: border-box;">
+                <div style="text-align:center; border-bottom:3px solid #dc2626; padding-bottom:15px; margin-bottom:20px">
+                    <h2 style="color:#dc2626; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
+                    <p style="margin:5px 0 0 0; font-size:16px; font-weight:bold;">ওভারডিউ কাজের তালিকা (জরুরি)</p>
+                    <p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p>
+                </div>
+                <table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px">
+                    <thead>
+                        <tr style="background:#fee2e2">
+                            <th style="padding:10px; border-bottom:2px solid #fca5a5; text-align:left;">গাড়ি (ধরন)</th>
+                            <th style="padding:10px; border-bottom:2px solid #fca5a5; text-align:left;">কাজের নাম</th>
+                            <th style="padding:10px; border-bottom:2px solid #fca5a5; text-align:left;">লক্ষ্যমাত্রা (তারিখ ও কি.মি)</th>
+                            <th style="padding:10px; border-bottom:2px solid #fca5a5; color:#b91c1c; text-align:left;">ওভারডিউ স্ট্যাটাস</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div style="margin-top:60px; text-align:right">
+                    <p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p>
+                </div>
+            </div>`;
             generatePDF(html, 'Overdue_Maintenance_Report.pdf');
         };
 
-        // 3. Upcoming Items Report
         let upcomingItemsData = [];
         window.openUpcomingModal = () => {
             const today = new Date();
@@ -526,31 +552,103 @@
             let rows = upcomingItemsData.map(item => `<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:bold;">${item.vehicleBa} <span style="font-weight:normal;font-size:12px;color:#64748b">(${item.type})</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0">${item.typeName}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0">${formatDate(item.nextDate)} <br> <span style="font-size:12px">(${item.nextKm} KM)</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#d97706;font-weight:bold;">${item.reason}</td></tr>`).join('');
             if(upcomingItemsData.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;">কোনো আসন্ন কাজ নেই</td></tr>`;
             
-            const html = `<div id="pdf-content" style="padding:40px; font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; width: 800px; margin: 0 auto;"><div style="text-align:center; border-bottom:3px solid #d97706; padding-bottom:15px; margin-bottom:20px"><h2 style="color:#d97706; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2><p style="margin:5px 0 0 0; font-size:16px; font-weight:bold;">আসন্ন কাজের তালিকা</p><p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p></div><table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px"><thead><tr style="background:#fef3c7"><th style="padding:10px; border-bottom:2px solid #fcd34d">গাড়ি (ধরন)</th><th style="padding:10px; border-bottom:2px solid #fcd34d">কাজের নাম</th><th style="padding:10px; border-bottom:2px solid #fcd34d">লক্ষ্যমাত্রা (তারিখ ও কি.মি)</th><th style="padding:10px; border-bottom:2px solid #fcd34d;color:#b45309;">আসন্ন স্ট্যাটাস</th></tr></thead><tbody>${rows}</tbody></table><div style="margin-top:60px; text-align:right"><p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p></div></div>`;
+            const html = `
+            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; width: 100%; box-sizing: border-box;">
+                <div style="text-align:center; border-bottom:3px solid #d97706; padding-bottom:15px; margin-bottom:20px">
+                    <h2 style="color:#d97706; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
+                    <p style="margin:5px 0 0 0; font-size:16px; font-weight:bold;">আসন্ন কাজের তালিকা</p>
+                    <p style="margin:5px 0 0 0; font-size:12px; color:#64748b">তারিখ: ${formatDate(new Date().toISOString())}</p>
+                </div>
+                <table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px">
+                    <thead>
+                        <tr style="background:#fef3c7">
+                            <th style="padding:10px; border-bottom:2px solid #fcd34d; text-align:left;">গাড়ি (ধরন)</th>
+                            <th style="padding:10px; border-bottom:2px solid #fcd34d; text-align:left;">কাজের নাম</th>
+                            <th style="padding:10px; border-bottom:2px solid #fcd34d; text-align:left;">লক্ষ্যমাত্রা (তারিখ ও কি.মি)</th>
+                            <th style="padding:10px; border-bottom:2px solid #fcd34d; color:#b45309; text-align:left;">আসন্ন স্ট্যাটাস</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div style="margin-top:60px; text-align:right">
+                    <p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p>
+                </div>
+            </div>`;
             generatePDF(html, 'Upcoming_Maintenance_Report.pdf');
         };
 
-        // Shared PDF Generator logic
+        // FIXED PDF GENERATOR FOR PERFECT A4 FIT
         function generatePDF(htmlContent, fileName) {
             const div = document.createElement('div'); 
             div.innerHTML = htmlContent; 
-            div.style.position = 'absolute'; div.style.left = '-9999px'; div.style.top = '0';
+            
+            // Render it explicitly offscreen with A4 pixel width approx
+            div.style.position = 'absolute'; 
+            div.style.top = '-9999px'; 
+            div.style.width = '794px'; // 96 DPI A4 width
+            div.style.backgroundColor = 'white';
+            
             document.body.appendChild(div);
             window.showToast("পিডিএফ প্রস্তুত হচ্ছে, অপেক্ষা করুন...");
-            const opt = { margin: 0.5, filename: fileName, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, windowWidth: 800 }, jsPDF: { unit: 'in', format: 'A4', orientation: 'portrait' } };
-            setTimeout(() => { html2pdf().set(opt).from(div.firstElementChild).save().then(() => { document.body.removeChild(div); window.showToast("পিডিএফ ডাউনলোড সম্পন্ন হয়েছে!"); }).catch(err => { document.body.removeChild(div); window.showToast("পিডিএফ তৈরিতে সমস্যা হয়েছে!", true); }); }, 300);
+            
+            const opt = { 
+                margin:       [0.5, 0.4, 0.5, 0.4], // [top, left, bottom, right] in inches
+                filename:     fileName, 
+                image:        { type: 'jpeg', quality: 0.98 }, 
+                html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0 }, 
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' } 
+            };
+            
+            setTimeout(() => { 
+                html2pdf().set(opt).from(div).save().then(() => { 
+                    document.body.removeChild(div); 
+                    window.showToast("পিডিএফ ডাউনলোড সম্পন্ন হয়েছে!"); 
+                }).catch(err => { 
+                    document.body.removeChild(div); 
+                    window.showToast("পিডিএফ তৈরিতে সমস্যা হয়েছে!", true); 
+                }); 
+            }, 300);
         }
 
-        // Single Vehicle PDF
         window.downloadVehicleReport = (vId) => {
             const v = vehicles.find(x => x.id === vId); const logs = maintenanceLog.filter(m => m.vehicleId === vId);
             let rows = logs.map(m => `<tr><td style="padding:10px; border-bottom:1px solid #e2e8f0">${formatDate(m.doneDate)}</td><td style="padding:10px; border-bottom:1px solid #e2e8f0; font-weight:bold;">${m.typeName}</td><td style="padding:10px; border-bottom:1px solid #e2e8f0">${m.doneKm} KM</td><td style="padding:10px; border-bottom:1px solid #e2e8f0; color:#dc2626">${formatDate(m.nextDate)}</td><td style="padding:10px; border-bottom:1px solid #e2e8f0; color:#dc2626">${m.nextKm} KM</td></tr>`).join('');
             if(logs.length === 0) rows = `<tr><td colspan="5" style="padding:15px; text-align:center; color:#64748b">কোনো রেকর্ড নেই</td></tr>`;
-            const html = `<div id="pdf-content" style="padding:40px; font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; width: 800px; margin: 0 auto;"><div style="text-align:center; border-bottom:3px solid #059669; padding-bottom:15px; margin-bottom:20px"><h2 style="color:#059669; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2><p style="margin:5px 0 0 0; font-size:16px">যানবাহন রক্ষণাবেক্ষণ লগ (এমটি শাখা)</p></div><div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #e2e8f0"><table style="width:100%"><tr><td><strong>বিএ নম্বর:</strong> ${v.baNo}</td><td><strong>গাড়ির ধরন:</strong> ${v.type}</td><td><strong>বর্তমান মিটার:</strong> ${v.currentKm || 0} KM</td></tr></table></div><table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px"><thead><tr style="background:#f1f5f9"><th style="padding:10px; border-bottom:2px solid #cbd5e1">কাজের তারিখ</th><th style="padding:10px; border-bottom:2px solid #cbd5e1">কাজের ধরন</th><th style="padding:10px; border-bottom:2px solid #cbd5e1">মিটার রিডিং</th><th style="padding:10px; border-bottom:2px solid #cbd5e1">পরবর্তী তারিখ</th><th style="padding:10px; border-bottom:2px solid #cbd5e1">পরবর্তী মিটার</th></tr></thead><tbody>${rows}</tbody></table><div style="margin-top:60px; text-align:right"><p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p></div></div>`;
+            
+            const html = `
+            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; width: 100%; box-sizing: border-box;">
+                <div style="text-align:center; border-bottom:3px solid #059669; padding-bottom:15px; margin-bottom:20px">
+                    <h2 style="color:#059669; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
+                    <p style="margin:5px 0 0 0; font-size:16px">যানবাহন রক্ষণাবেক্ষণ লগ (এমটি শাখা)</p>
+                </div>
+                <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #e2e8f0">
+                    <table style="width:100%">
+                        <tr>
+                            <td style="text-align:left;"><strong>বিএ নম্বর:</strong> ${v.baNo}</td>
+                            <td style="text-align:left;"><strong>গাড়ির ধরন:</strong> ${v.type}</td>
+                            <td style="text-align:left;"><strong>বর্তমান মিটার:</strong> ${v.currentKm || 0} KM</td>
+                        </tr>
+                    </table>
+                </div>
+                <table style="width:100%; text-align:left; border-collapse:collapse; font-size:14px">
+                    <thead>
+                        <tr style="background:#f1f5f9">
+                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">কাজের তারিখ</th>
+                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">কাজের ধরন</th>
+                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">মিটার রিডিং</th>
+                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">পরবর্তী তারিখ</th>
+                            <th style="padding:10px; border-bottom:2px solid #cbd5e1; text-align:left;">পরবর্তী মিটার</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div style="margin-top:60px; text-align:right">
+                    <p style="border-top:1px solid #000; display:inline-block; padding-top:5px; margin:0">এমটি এনসিও / অফিসার স্বাক্ষর</p>
+                </div>
+            </div>`;
             generatePDF(html, `MT_Report_${v.baNo}.pdf`);
         };
 
-        // UI & Smart Logic Render
         function updateUI() {
             document.getElementById('maint-vehicle').innerHTML = '<option value="" disabled selected>গাড়ি নির্বাচন করুন...</option>' + vehicles.map(v => `<option value="${v.id}">${v.baNo}</option>`).join('');
             document.getElementById('maint-type').innerHTML = '<option value="" disabled selected>কাজের ধরন নির্বাচন করুন...</option>' + taskRules.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
@@ -561,7 +659,6 @@
 
             document.getElementById('stat-total-vehicles').innerText = vehicles.length;
             
-            // SMART LOGIC
             const alerts = document.getElementById('alerts-container'); alerts.innerHTML = '';
             let overdueCount = 0, upcomingCount = 0, okCount = vehicles.length, today = new Date();
             const latestRecords = {};
@@ -616,7 +713,6 @@
             if(chartInstance) chartInstance.destroy();
             chartInstance = new Chart(document.getElementById('mtChart').getContext('2d'), { type: 'doughnut', data: { labels: ['ঠিক আছে', 'আসন্ন', 'বকেয়া'], datasets: [{ data: [okCount||1, upcomingCount, overdueCount], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0, cutout: '75%' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: {family: "'Hind Siliguri', sans-serif"} } } } } });
 
-            // Vehicles List Render
             document.getElementById('vehicles-container').innerHTML = vehicles.map(v => {
                 const latestMaint = maintenanceLog.find(m => m.vehicleId === v.id);
                 let maintStatus = '<span class="text-[10px] md:text-xs text-slate-400">কোনো রেকর্ড নেই</span>';
