@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>9 EB MT Tracker V10</title>
+    <title>9 EB MT Tracker Final</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kalpurush&family=Hind+Siliguri:wght@400;500;600;700&display=swap');
@@ -22,7 +23,7 @@
         .grad-primary { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
         .grad-danger { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); }
         
-        .clickable-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .clickable-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); cursor: pointer; }
     </style>
 </head>
 <body class="min-h-screen pb-24 md:pb-10 text-slate-800">
@@ -31,7 +32,6 @@
     <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="px-4 py-3 flex justify-between items-center max-w-5xl mx-auto">
             <div class="flex items-center gap-3">
-                <!-- Updated Brand Logo -->
                 <img src="logo.jpg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/792/792119.png'" alt="Logo" class="w-10 h-10 object-cover p-0.5 bg-white border-2 border-emerald-500 rounded-full shadow-sm">
                 <div>
                     <h1 class="font-bold text-lg text-slate-800 leading-tight">৯ ইস্ট বেঙ্গল (Smart MT)</h1>
@@ -45,7 +45,6 @@
             </div>
         </div>
 
-        <!-- Desktop Navigation -->
         <nav class="hidden md:flex border-t border-slate-100 bg-white max-w-5xl mx-auto px-2">
             <button onclick="window.switchTab('dashboard')" id="dnav-dashboard" class="nav-desktop-active px-6 py-3 text-slate-600 hover:bg-slate-50 transition font-semibold rounded-t-lg"><i class="fa-solid fa-chart-pie mr-2"></i>ড্যাশবোর্ড</button>
             <button onclick="window.switchTab('vehicles')" id="dnav-vehicles" class="px-6 py-3 text-slate-600 hover:bg-slate-50 transition font-semibold rounded-t-lg"><i class="fa-solid fa-truck-fleet mr-2"></i>যানবাহন ও কি.মি</button>
@@ -61,19 +60,19 @@
             <!-- 1. Dashboard Tab -->
             <section id="sec-dashboard" class="block animate-fade-in">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div onclick="window.openAllVehiclesModal()" class="grad-primary rounded-2xl p-4 md:p-5 text-white shadow-lg shadow-emerald-200 col-span-2 md:col-span-2 clickable-card cursor-pointer transition-all duration-300">
+                    <div onclick="window.openAllVehiclesModal()" class="grad-primary rounded-2xl p-4 md:p-5 text-white shadow-lg shadow-emerald-200 col-span-2 md:col-span-2 clickable-card transition-all duration-300">
                         <div class="flex justify-between items-start">
                             <div><p class="text-emerald-100 text-sm font-medium mb-1">মোট গাড়ি (তালিকা দেখুন)</p><h3 class="text-4xl font-bold" id="stat-total-vehicles">0</h3></div>
                             <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl"><i class="fa-solid fa-truck"></i></div>
                         </div>
                     </div>
-                    <div onclick="window.openOverdueModal()" class="grad-danger rounded-2xl p-4 text-white shadow-lg shadow-red-200 clickable-card cursor-pointer transition-all duration-300">
+                    <div onclick="window.openOverdueModal()" class="grad-danger rounded-2xl p-4 text-white shadow-lg shadow-red-200 clickable-card transition-all duration-300">
                         <div class="flex justify-between items-start">
                             <div><p class="text-red-100 text-xs font-medium mb-1">ওভারডিউ (দেখুন)</p><h3 class="text-3xl font-bold" id="stat-overdue">0</h3></div>
                             <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation"></i></div>
                         </div>
                     </div>
-                    <div onclick="window.openUpcomingModal()" class="bg-amber-500 rounded-2xl p-4 text-white shadow-lg shadow-amber-200 clickable-card cursor-pointer transition-all duration-300">
+                    <div onclick="window.openUpcomingModal()" class="bg-amber-500 rounded-2xl p-4 text-white shadow-lg shadow-amber-200 clickable-card transition-all duration-300">
                         <div class="flex justify-between items-start">
                             <div><p class="text-amber-100 text-xs font-medium mb-1">আসন্ন (দেখুন)</p><h3 class="text-3xl font-bold" id="stat-upcoming-raw">0</h3></div>
                             <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
@@ -82,12 +81,10 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <!-- Chart -->
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 md:col-span-1">
                         <h3 class="font-bold text-slate-700 text-sm mb-4"><i class="fa-solid fa-chart-pie mr-2 text-emerald-500"></i>স্ট্যাটাস ওভারভিউ</h3>
                         <div class="h-48 relative"><canvas id="mtChart"></canvas></div>
                     </div>
-                    <!-- Alerts -->
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 md:col-span-2">
                         <div class="flex justify-between items-end mb-4 border-b border-slate-50 pb-2">
                             <h3 class="font-bold text-slate-800"><i class="fa-solid fa-bolt text-amber-500 mr-2"></i>জরুরি অ্যালার্ট</h3>
@@ -118,7 +115,6 @@
             <!-- 3. Maintenance Entry Tab -->
             <section id="sec-add-maintenance" class="hidden animate-fade-in">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Entry Form -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <div class="p-5 border-b border-slate-50 bg-slate-50/50"><h2 class="font-bold text-slate-800"><i class="fa-solid fa-wrench text-blue-500 mr-2"></i>নতুন কাজ এন্ট্রি</h2></div>
                         <form id="form-maintenance" class="p-5 space-y-4">
@@ -145,7 +141,6 @@
                             </button>
                         </form>
                     </div>
-                    <!-- History -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <div class="p-5 border-b border-slate-50"><h3 class="font-bold text-slate-800"><i class="fa-solid fa-clock-rotate-left text-slate-400 mr-2"></i>সাম্প্রতিক হিস্ট্রি</h3></div>
                         <div id="maintenance-history-list" class="p-4 space-y-3 max-h-[400px] overflow-y-auto hide-scroll"></div>
@@ -157,7 +152,6 @@
             <section id="sec-settings" class="hidden animate-fade-in">
                 <h3 class="font-bold text-slate-800 mb-4 ml-1"><i class="fa-solid fa-sliders text-purple-500 mr-2"></i>অ্যাপ সেটআপ</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Task Rules -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
                         <h4 class="font-bold text-slate-700 mb-3 border-b pb-2">কাজের নিয়ম যুক্ত করুন</h4>
                         <form id="form-rule" class="space-y-3 mb-4">
@@ -170,7 +164,6 @@
                         </form>
                         <ul id="rules-list" class="space-y-2 max-h-[250px] overflow-y-auto hide-scroll text-sm"></ul>
                     </div>
-                    <!-- Vehicle Types -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
                         <h4 class="font-bold text-slate-700 mb-3 border-b pb-2">গাড়ির ধরন যুক্ত করুন</h4>
                         <form id="form-vtype" class="flex gap-2 mb-4">
@@ -183,14 +176,9 @@
             </section>
         </div>
 
-        <!-- Footer Section -->
         <footer class="mt-12 mb-4 border-t border-slate-200 pt-6 text-center animate-fade-in">
-            <p class="text-[11px] text-slate-500 font-medium tracking-wide">
-                &copy; <span id="current-year"></span> ৯ ইস্ট বেঙ্গল রেজিমেন্ট। সর্বস্বত্ব সংরক্ষিত।
-            </p>
-            <p class="text-xs font-bold text-emerald-600 mt-1.5 flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-laptop-code"></i> ডেভলপড বাই কর্পোরাল আব্দুল্লাহ আল মাহমুদ
-            </p>
+            <p class="text-[11px] text-slate-500 font-medium tracking-wide">&copy; <span id="current-year"></span> ৯ ইস্ট বেঙ্গল রেজিমেন্ট। সর্বস্বত্ব সংরক্ষিত।</p>
+            <p class="text-xs font-bold text-emerald-600 mt-1.5 flex items-center justify-center gap-1.5"><i class="fa-solid fa-laptop-code"></i> ডেভলপড বাই কর্পোরাল আব্দুল্লাহ আল মাহমুদ</p>
         </footer>
 
     </main>
@@ -205,8 +193,7 @@
         </div>
     </nav>
 
-    <!-- Modals (Lists) -->
-    <!-- Modal: All Vehicles List -->
+    <!-- Modals -->
     <div id="all-vehicles-modal" class="hidden fixed inset-0 bg-slate-900/70 z-[100] flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50 rounded-t-2xl">
@@ -225,7 +212,6 @@
         </div>
     </div>
 
-    <!-- Modal: Overdue Items List -->
     <div id="overdue-modal" class="hidden fixed inset-0 bg-slate-900/70 z-[100] flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-red-50 rounded-t-2xl">
@@ -244,7 +230,6 @@
         </div>
     </div>
 
-    <!-- Modal: Upcoming Items List -->
     <div id="upcoming-modal" class="hidden fixed inset-0 bg-slate-900/70 z-[100] flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-amber-50 rounded-t-2xl">
@@ -263,7 +248,7 @@
         </div>
     </div>
 
-    <!-- Modal: Add Vehicle -->
+    <!-- Modals for Input -->
     <div id="add-veh-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-5"><h3 class="font-bold text-lg text-slate-800">নতুন গাড়ি যোগ</h3><button onclick="document.getElementById('add-veh-modal').classList.add('hidden')" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-slate-500 transition"><i class="fa-solid fa-xmark"></i></button></div>
@@ -274,7 +259,7 @@
             </form>
         </div>
     </div>
-    <!-- Modal: KM Update -->
+
     <div id="km-update-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl border-t-4 border-emerald-500">
             <div class="flex justify-between items-center mb-2"><h3 class="font-bold text-lg text-slate-800">মিটার রিডিং আপডেট</h3><button onclick="window.closeKmModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
@@ -286,13 +271,13 @@
             </form>
         </div>
     </div>
-    <!-- Toast & Confirm -->
+
     <div id="toast-container" class="fixed top-16 left-1/2 transform -translate-x-1/2 z-[9999] flex flex-col gap-2 w-11/12 max-w-sm pointer-events-none"></div>
     <div id="confirm-modal" class="hidden fixed inset-0 bg-black/60 z-[10000] flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center"><div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl"><i class="fa-solid fa-triangle-exclamation"></i></div><h3 class="text-lg font-bold text-slate-800 mb-1">নিশ্চিত?</h3><p id="confirm-msg" class="text-slate-500 text-sm mb-6">মুছে ফেলা হবে।</p><div class="flex gap-3"><button onclick="window.closeConfirm()" class="flex-1 bg-slate-100 hover:bg-slate-200 font-bold py-2.5 rounded-xl transition text-slate-600">বাতিল</button><button onclick="window.executeConfirm()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl shadow-md transition">হ্যাঁ, মুছুন</button></div></div>
     </div>
 
-    <!-- Firebase System & Core Logic -->
+    <!-- Core Scripts -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -390,33 +375,52 @@
 
         function formatDate(dStr) { if(!dStr) return ''; return new Date(dStr).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }); }
 
-        // --- NEW MODALS LOGIC FOR REPORTS ---
+        // --- NEW PDF ENGINE (100% BLANK-PROOF) ---
+        function generatePDF(htmlContent, fileName) {
+            window.showToast("পিডিএফ প্রস্তুত হচ্ছে, দয়া করে অপেক্ষা করুন...");
+            
+            // Create a wrapper that is passed directly to the generator
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = htmlContent;
+
+            const opt = {
+                margin:       0.4,
+                filename:     fileName,
+                image:        { type: 'jpeg', quality: 1.0 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Using the Promise structure of html2pdf safely
+            html2pdf().set(opt).from(wrapper).save()
+                .then(() => {
+                    window.showToast("পিডিএফ সফলভাবে ডাউনলোড হয়েছে!");
+                })
+                .catch(err => {
+                    console.error("PDF Error:", err);
+                    window.showToast("পিডিএফ তৈরিতে সমস্যা হয়েছে!", true);
+                });
+        }
+
+        // Shared Watermark HTML (TEXT ONLY - prevents CORS crash)
+        const watermarkHTML = `<div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-35deg); font-size: 80px; color: rgba(5, 150, 105, 0.06); font-weight: bold; white-space: nowrap; z-index: 0; pointer-events: none;">CHARGING NINE</div>`;
+
         window.openAllVehiclesModal = () => {
             const tbody = document.getElementById('all-vehicles-tbody');
             if (vehicles.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">কোনো গাড়ি নেই</td></tr>`; } 
             else {
-                tbody.innerHTML = vehicles.map((v, index) => `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-3 border-b border-slate-100 text-center font-bold text-slate-400">${index + 1}</td>
-                        <td class="p-3 border-b border-slate-100 font-bold text-slate-800">${v.baNo}</td>
-                        <td class="p-3 border-b border-slate-100">${v.type}</td>
-                        <td class="p-3 border-b border-slate-100 text-right font-bold text-emerald-600">${v.currentKm || 0} KM</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = vehicles.map((v, index) => `<tr class="hover:bg-slate-50"><td class="p-3 border-b border-slate-100 text-center font-bold text-slate-400">${index + 1}</td><td class="p-3 border-b border-slate-100 font-bold text-slate-800">${v.baNo}</td><td class="p-3 border-b border-slate-100">${v.type}</td><td class="p-3 border-b border-slate-100 text-right font-bold text-emerald-600">${v.currentKm || 0} KM</td></tr>`).join('');
             }
             document.getElementById('all-vehicles-modal').classList.remove('hidden');
         };
 
         window.downloadAllVehiclesReport = () => {
-            let rows = vehicles.map((v, i) => `<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:center;position:relative;z-index:10;">${i+1}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:bold;position:relative;z-index:10;">${v.baNo}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${v.type}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;text-align:right;position:relative;z-index:10;">${v.currentKm || 0} KM</td></tr>`).join('');
-            if(vehicles.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;position:relative;z-index:10;">কোনো রেকর্ড নেই</td></tr>`;
+            let rows = vehicles.map((v, i) => `<tr><td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:center;">${i+1}</td><td style="padding:12px;border-bottom:1px solid #e2e8f0;font-weight:bold;">${v.baNo}</td><td style="padding:12px;border-bottom:1px solid #e2e8f0">${v.type}</td><td style="padding:12px;border-bottom:1px solid #e2e8f0;text-align:right;">${v.currentKm || 0} KM</td></tr>`).join('');
+            if(vehicles.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;">কোনো রেকর্ড নেই</td></tr>`;
             
             const html = `
-            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; padding: 30px 40px; min-height:1000px; position: relative;">
-                
-                <!-- PDF Watermark Image -->
-                <img src="logo.jpg" style="position: absolute; top: 400px; left: 50%; transform: translate(-50%, -50%); width: 450px; opacity: 0.12; z-index: 0;" />
-                
+            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; padding: 20px; position: relative; overflow: hidden; min-height: 800px;">
+                ${watermarkHTML}
                 <div style="position: relative; z-index: 10;">
                     <div style="text-align:center; border-bottom:3px solid #059669; padding-bottom:15px; margin-bottom:20px">
                         <h2 style="color:#059669; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
@@ -444,17 +448,12 @@
 
         let overdueItemsData = [];
         window.openOverdueModal = () => {
-            const today = new Date();
-            const latestRecords = {};
+            const today = new Date(); const latestRecords = {};
             maintenanceLog.forEach(m => { const key = `${m.vehicleId}_${m.typeId}`; if (!latestRecords[key] || new Date(m.doneDate) > new Date(latestRecords[key].doneDate)) latestRecords[key] = m; });
-            
             overdueItemsData = [];
             Object.values(latestRecords).forEach(m => {
-                const v = vehicles.find(x => x.id === m.vehicleId);
-                const currentKm = v ? (v.currentKm || 0) : 0;
-                const diffDays = Math.ceil((new Date(m.nextDate) - today) / (1000 * 60 * 60 * 24));
-                const kmRemaining = m.nextKm - currentKm;
-                
+                const v = vehicles.find(x => x.id === m.vehicleId); const currentKm = v ? (v.currentKm || 0) : 0;
+                const diffDays = Math.ceil((new Date(m.nextDate) - today) / (1000 * 60 * 60 * 24)); const kmRemaining = m.nextKm - currentKm;
                 if (diffDays <= 0 || kmRemaining <= 0) {
                     let reason = (diffDays <= 0 && kmRemaining <= 0) ? "তারিখ ও কি.মি. পার হয়েছে" : (kmRemaining <= 0 ? `${Math.abs(kmRemaining)} কি.মি বেশি!` : `${Math.abs(diffDays)} দিন ওভারডিউ!`);
                     overdueItemsData.push({ ...m, type: v?v.type:'-', currentKm, reason });
@@ -464,33 +463,18 @@
             const tbody = document.getElementById('overdue-tbody');
             if (overdueItemsData.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-emerald-500 font-bold"><i class="fa-solid fa-circle-check mr-2"></i>কোনো ওভারডিউ কাজ নেই!</td></tr>`; } 
             else {
-                tbody.innerHTML = overdueItemsData.map(item => `
-                    <tr class="hover:bg-red-50/50 transition">
-                        <td class="p-3 border-b border-slate-100">
-                            <span class="font-bold text-slate-800">${item.vehicleBa}</span><br>
-                            <span class="text-xs text-slate-500">${item.typeName}</span>
-                        </td>
-                        <td class="p-3 border-b border-slate-100 text-xs">
-                            তারিখ: <strong>${formatDate(item.nextDate)}</strong><br>
-                            কি.মি: <strong>${item.nextKm} KM</strong>
-                        </td>
-                        <td class="p-3 border-b border-slate-100 text-red-600 font-bold text-xs">${item.reason}</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = overdueItemsData.map(item => `<tr class="hover:bg-red-50/50 transition"><td class="p-3 border-b border-slate-100"><span class="font-bold text-slate-800">${item.vehicleBa}</span><br><span class="text-xs text-slate-500">${item.typeName}</span></td><td class="p-3 border-b border-slate-100 text-xs">তারিখ: <strong>${formatDate(item.nextDate)}</strong><br>কি.মি: <strong>${item.nextKm} KM</strong></td><td class="p-3 border-b border-slate-100 text-red-600 font-bold text-xs">${item.reason}</td></tr>`).join('');
             }
             document.getElementById('overdue-modal').classList.remove('hidden');
         };
 
         window.downloadOverdueReport = () => {
-            let rows = overdueItemsData.map(item => `<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:bold;position:relative;z-index:10;">${item.vehicleBa} <span style="font-weight:normal;font-size:12px;color:#64748b">(${item.type})</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${item.typeName}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${formatDate(item.nextDate)} <br> <span style="font-size:12px">(${item.nextKm} KM)</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#dc2626;font-weight:bold;position:relative;z-index:10;">${item.reason}</td></tr>`).join('');
-            if(overdueItemsData.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;position:relative;z-index:10;">কোনো ওভারডিউ কাজ নেই</td></tr>`;
+            let rows = overdueItemsData.map(item => `<tr><td style="padding:12px;border-bottom:1px solid #e2e8f0;font-weight:bold;">${item.vehicleBa} <span style="font-weight:normal;font-size:12px;color:#64748b">(${item.type})</span></td><td style="padding:12px;border-bottom:1px solid #e2e8f0">${item.typeName}</td><td style="padding:12px;border-bottom:1px solid #e2e8f0">${formatDate(item.nextDate)} <br> <span style="font-size:12px">(${item.nextKm} KM)</span></td><td style="padding:12px;border-bottom:1px solid #e2e8f0;color:#dc2626;font-weight:bold;">${item.reason}</td></tr>`).join('');
+            if(overdueItemsData.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;">কোনো ওভারডিউ কাজ নেই</td></tr>`;
             
             const html = `
-            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; padding: 30px 40px; min-height:1000px; position: relative;">
-                
-                <!-- PDF Watermark Image -->
-                <img src="logo.jpg" style="position: absolute; top: 400px; left: 50%; transform: translate(-50%, -50%); width: 450px; opacity: 0.12; z-index: 0;" />
-
+            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; padding: 20px; position: relative; overflow: hidden; min-height: 800px;">
+                ${watermarkHTML}
                 <div style="position: relative; z-index: 10;">
                     <div style="text-align:center; border-bottom:3px solid #dc2626; padding-bottom:15px; margin-bottom:20px">
                         <h2 style="color:#dc2626; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
@@ -518,21 +502,14 @@
 
         let upcomingItemsData = [];
         window.openUpcomingModal = () => {
-            const today = new Date();
-            const latestRecords = {};
+            const today = new Date(); const latestRecords = {};
             maintenanceLog.forEach(m => { const key = `${m.vehicleId}_${m.typeId}`; if (!latestRecords[key] || new Date(m.doneDate) > new Date(latestRecords[key].doneDate)) latestRecords[key] = m; });
-            
             upcomingItemsData = [];
             Object.values(latestRecords).forEach(m => {
-                const v = vehicles.find(x => x.id === m.vehicleId);
-                const currentKm = v ? (v.currentKm || 0) : 0;
-                const diffDays = Math.ceil((new Date(m.nextDate) - today) / (1000 * 60 * 60 * 24));
-                const kmRemaining = m.nextKm - currentKm;
-                
-                const isOverdueByDate = diffDays <= 0;
-                const isOverdueByKm = kmRemaining <= 0;
-                const isUpcomingByDate = diffDays > 0 && diffDays <= 30;
-                const isUpcomingByKm = kmRemaining > 0 && kmRemaining <= 500;
+                const v = vehicles.find(x => x.id === m.vehicleId); const currentKm = v ? (v.currentKm || 0) : 0;
+                const diffDays = Math.ceil((new Date(m.nextDate) - today) / (1000 * 60 * 60 * 24)); const kmRemaining = m.nextKm - currentKm;
+                const isOverdueByDate = diffDays <= 0; const isOverdueByKm = kmRemaining <= 0;
+                const isUpcomingByDate = diffDays > 0 && diffDays <= 30; const isUpcomingByKm = kmRemaining > 0 && kmRemaining <= 500;
 
                 if (!(isOverdueByDate || isOverdueByKm) && (isUpcomingByDate || isUpcomingByKm)) {
                     let reason = isUpcomingByKm && isUpcomingByDate ? `আর ${diffDays} দিন বা ${kmRemaining} কি.মি.` : (isUpcomingByKm ? `আর মাত্র ${kmRemaining} কি.মি. বাকি` : `আর মাত্র ${diffDays} দিন বাকি`);
@@ -543,33 +520,18 @@
             const tbody = document.getElementById('upcoming-tbody');
             if (upcomingItemsData.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-emerald-500 font-bold"><i class="fa-solid fa-circle-check mr-2"></i>কোনো আসন্ন কাজ নেই!</td></tr>`; } 
             else {
-                tbody.innerHTML = upcomingItemsData.map(item => `
-                    <tr class="hover:bg-amber-50/50 transition">
-                        <td class="p-3 border-b border-slate-100">
-                            <span class="font-bold text-slate-800">${item.vehicleBa}</span><br>
-                            <span class="text-xs text-slate-500">${item.typeName}</span>
-                        </td>
-                        <td class="p-3 border-b border-slate-100 text-xs">
-                            তারিখ: <strong>${formatDate(item.nextDate)}</strong><br>
-                            কি.মি: <strong>${item.nextKm} KM</strong>
-                        </td>
-                        <td class="p-3 border-b border-slate-100 text-amber-600 font-bold text-xs">${item.reason}</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = upcomingItemsData.map(item => `<tr class="hover:bg-amber-50/50 transition"><td class="p-3 border-b border-slate-100"><span class="font-bold text-slate-800">${item.vehicleBa}</span><br><span class="text-xs text-slate-500">${item.typeName}</span></td><td class="p-3 border-b border-slate-100 text-xs">তারিখ: <strong>${formatDate(item.nextDate)}</strong><br>কি.মি: <strong>${item.nextKm} KM</strong></td><td class="p-3 border-b border-slate-100 text-amber-600 font-bold text-xs">${item.reason}</td></tr>`).join('');
             }
             document.getElementById('upcoming-modal').classList.remove('hidden');
         };
 
         window.downloadUpcomingReport = () => {
-            let rows = upcomingItemsData.map(item => `<tr><td style="padding:10px;border-bottom:1px solid #e2e8f0;font-weight:bold;position:relative;z-index:10;">${item.vehicleBa} <span style="font-weight:normal;font-size:12px;color:#64748b">(${item.type})</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${item.typeName}</td><td style="padding:10px;border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${formatDate(item.nextDate)} <br> <span style="font-size:12px">(${item.nextKm} KM)</span></td><td style="padding:10px;border-bottom:1px solid #e2e8f0;color:#d97706;font-weight:bold;position:relative;z-index:10;">${item.reason}</td></tr>`).join('');
-            if(upcomingItemsData.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;position:relative;z-index:10;">কোনো আসন্ন কাজ নেই</td></tr>`;
+            let rows = upcomingItemsData.map(item => `<tr><td style="padding:12px;border-bottom:1px solid #e2e8f0;font-weight:bold;">${item.vehicleBa} <span style="font-weight:normal;font-size:12px;color:#64748b">(${item.type})</span></td><td style="padding:12px;border-bottom:1px solid #e2e8f0">${item.typeName}</td><td style="padding:12px;border-bottom:1px solid #e2e8f0">${formatDate(item.nextDate)} <br> <span style="font-size:12px">(${item.nextKm} KM)</span></td><td style="padding:12px;border-bottom:1px solid #e2e8f0;color:#d97706;font-weight:bold;">${item.reason}</td></tr>`).join('');
+            if(upcomingItemsData.length === 0) rows = `<tr><td colspan="4" style="padding:15px;text-align:center;">কোনো আসন্ন কাজ নেই</td></tr>`;
             
             const html = `
-            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; padding: 30px 40px; min-height:1000px; position: relative;">
-                
-                <!-- PDF Watermark Image -->
-                <img src="logo.jpg" style="position: absolute; top: 400px; left: 50%; transform: translate(-50%, -50%); width: 450px; opacity: 0.12; z-index: 0;" />
-
+            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; padding: 20px; position: relative; overflow: hidden; min-height: 800px;">
+                ${watermarkHTML}
                 <div style="position: relative; z-index: 10;">
                     <div style="text-align:center; border-bottom:3px solid #d97706; padding-bottom:15px; margin-bottom:20px">
                         <h2 style="color:#d97706; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
@@ -595,50 +557,14 @@
             generatePDF(html, 'Upcoming_Maintenance_Report.pdf');
         };
 
-        // FIXED PDF GENERATOR WITH WATERMARK SUPPORT
-        function generatePDF(htmlContent, fileName) {
-            const div = document.createElement('div'); 
-            div.innerHTML = htmlContent; 
-            
-            // Set explicit width for perfect A4 fitting
-            div.style.position = 'absolute'; 
-            div.style.top = '-9999px'; 
-            div.style.width = '794px'; 
-            div.style.backgroundColor = 'white';
-            
-            document.body.appendChild(div);
-            window.showToast("পিডিএফ প্রস্তুত হচ্ছে, অপেক্ষা করুন...");
-            
-            const opt = { 
-                margin:       [0.5, 0.4, 0.5, 0.4], 
-                filename:     fileName, 
-                image:        { type: 'jpeg', quality: 0.98 }, 
-                html2canvas:  { scale: 2, useCORS: true, logging: false }, 
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' } 
-            };
-            
-            setTimeout(() => { 
-                html2pdf().set(opt).from(div).save().then(() => { 
-                    document.body.removeChild(div); 
-                    window.showToast("পিডিএফ ডাউনলোড সম্পন্ন হয়েছে!"); 
-                }).catch(err => { 
-                    document.body.removeChild(div); 
-                    window.showToast("পিডিএফ তৈরিতে সমস্যা হয়েছে!", true); 
-                }); 
-            }, 300);
-        }
-
         window.downloadVehicleReport = (vId) => {
             const v = vehicles.find(x => x.id === vId); const logs = maintenanceLog.filter(m => m.vehicleId === vId);
-            let rows = logs.map(m => `<tr><td style="padding:10px; border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${formatDate(m.doneDate)}</td><td style="padding:10px; border-bottom:1px solid #e2e8f0; font-weight:bold;position:relative;z-index:10;">${m.typeName}</td><td style="padding:10px; border-bottom:1px solid #e2e8f0;position:relative;z-index:10;">${m.doneKm} KM</td><td style="padding:10px; border-bottom:1px solid #e2e8f0; color:#dc2626;position:relative;z-index:10;">${formatDate(m.nextDate)}</td><td style="padding:10px; border-bottom:1px solid #e2e8f0; color:#dc2626;position:relative;z-index:10;">${m.nextKm} KM</td></tr>`).join('');
-            if(logs.length === 0) rows = `<tr><td colspan="5" style="padding:15px; text-align:center; color:#64748b;position:relative;z-index:10;">কোনো রেকর্ড নেই</td></tr>`;
+            let rows = logs.map(m => `<tr><td style="padding:12px; border-bottom:1px solid #e2e8f0">${formatDate(m.doneDate)}</td><td style="padding:12px; border-bottom:1px solid #e2e8f0; font-weight:bold;">${m.typeName}</td><td style="padding:12px; border-bottom:1px solid #e2e8f0">${m.doneKm} KM</td><td style="padding:12px; border-bottom:1px solid #e2e8f0; color:#dc2626">${formatDate(m.nextDate)}</td><td style="padding:12px; border-bottom:1px solid #e2e8f0; color:#dc2626">${m.nextKm} KM</td></tr>`).join('');
+            if(logs.length === 0) rows = `<tr><td colspan="5" style="padding:15px; text-align:center; color:#64748b">কোনো রেকর্ড নেই</td></tr>`;
             
             const html = `
-            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; padding: 30px 40px; min-height:1000px; position: relative;">
-                
-                <!-- PDF Watermark Image -->
-                <img src="logo.jpg" style="position: absolute; top: 400px; left: 50%; transform: translate(-50%, -50%); width: 450px; opacity: 0.12; z-index: 0;" />
-
+            <div style="font-family:'Hind Siliguri', sans-serif; color:#1e293b; background: white; padding: 20px; position: relative; overflow: hidden; min-height: 800px;">
+                ${watermarkHTML}
                 <div style="position: relative; z-index: 10;">
                     <div style="text-align:center; border-bottom:3px solid #059669; padding-bottom:15px; margin-bottom:20px">
                         <h2 style="color:#059669; font-size:24px; margin:0">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h2>
@@ -690,43 +616,19 @@
             maintenanceLog.forEach(m => { const key = `${m.vehicleId}_${m.typeId}`; if (!latestRecords[key] || new Date(m.doneDate) > new Date(latestRecords[key].doneDate)) latestRecords[key] = m; });
             
             Object.values(latestRecords).forEach(m => {
-                const v = vehicles.find(x => x.id === m.vehicleId);
-                const currentKm = v ? (v.currentKm || 0) : 0;
-                
-                const diffDays = Math.ceil((new Date(m.nextDate) - today) / (1000 * 60 * 60 * 24));
-                const kmRemaining = m.nextKm - currentKm;
-
-                const isOverdueByDate = diffDays <= 0;
-                const isOverdueByKm = kmRemaining <= 0;
-                const isUpcomingByDate = diffDays > 0 && diffDays <= 30;
-                const isUpcomingByKm = kmRemaining > 0 && kmRemaining <= 500;
+                const v = vehicles.find(x => x.id === m.vehicleId); const currentKm = v ? (v.currentKm || 0) : 0;
+                const diffDays = Math.ceil((new Date(m.nextDate) - today) / (1000 * 60 * 60 * 24)); const kmRemaining = m.nextKm - currentKm;
+                const isOverdueByDate = diffDays <= 0; const isOverdueByKm = kmRemaining <= 0;
+                const isUpcomingByDate = diffDays > 0 && diffDays <= 30; const isUpcomingByKm = kmRemaining > 0 && kmRemaining <= 500;
 
                 if (isOverdueByDate || isOverdueByKm) {
                     overdueCount++; okCount--;
                     let reason = isOverdueByDate && isOverdueByKm ? "তারিখ ও কি.মি. উভয় পার হয়েছে!" : (isOverdueByKm ? `<i class="fa-solid fa-gauge-high"></i> ${Math.abs(kmRemaining)} কি.মি. বেশি চলেছে!` : `<i class="fa-regular fa-calendar-xmark"></i> ${Math.abs(diffDays)} দিন ওভারডিউ!`);
-                    
-                    alerts.innerHTML += `
-                        <div class="bg-white border border-red-100 p-4 rounded-xl shadow-sm mb-3 flex gap-3 hover:shadow-md transition">
-                            <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 shrink-0"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                            <div class="flex-1">
-                                <h4 class="font-bold text-slate-800 text-sm md:text-base">${m.vehicleBa} <span class="text-xs text-red-600 bg-red-50 px-2 py-0.5 rounded ml-1">${m.typeName}</span></h4>
-                                <p class="text-xs font-bold text-red-600 mt-1">${reason}</p>
-                                <p class="text-[10px] md:text-xs text-slate-500 mt-1">লক্ষ্যমাত্রা: <span class="font-semibold text-slate-700">${m.nextKm} KM</span> | বর্তমান: <span class="font-semibold text-slate-700">${currentKm} KM</span></p>
-                            </div>
-                        </div>`;
+                    alerts.innerHTML += `<div class="bg-white border border-red-100 p-4 rounded-xl shadow-sm mb-3 flex gap-3 hover:shadow-md transition"><div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 shrink-0"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="flex-1"><h4 class="font-bold text-slate-800 text-sm md:text-base">${m.vehicleBa} <span class="text-xs text-red-600 bg-red-50 px-2 py-0.5 rounded ml-1">${m.typeName}</span></h4><p class="text-xs font-bold text-red-600 mt-1">${reason}</p><p class="text-[10px] md:text-xs text-slate-500 mt-1">লক্ষ্যমাত্রা: <span class="font-semibold text-slate-700">${m.nextKm} KM</span> | বর্তমান: <span class="font-semibold text-slate-700">${currentKm} KM</span></p></div></div>`;
                 } else if (isUpcomingByDate || isUpcomingByKm) {
                     upcomingCount++; okCount--;
                     let reason = isUpcomingByKm && isUpcomingByDate ? `আর ${diffDays} দিন বা ${kmRemaining} কি.মি.` : (isUpcomingByKm ? `আর মাত্র ${kmRemaining} কি.মি. বাকি` : `আর মাত্র ${diffDays} দিন বাকি`);
-                    
-                    alerts.innerHTML += `
-                        <div class="bg-white border border-amber-100 p-4 rounded-xl shadow-sm mb-3 flex gap-3 hover:shadow-md transition">
-                            <div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 shrink-0"><i class="fa-solid fa-clock"></i></div>
-                            <div class="flex-1">
-                                <h4 class="font-bold text-slate-800 text-sm md:text-base">${m.vehicleBa} <span class="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded ml-1">${m.typeName}</span></h4>
-                                <p class="text-xs font-bold text-amber-600 mt-1">${reason}</p>
-                                <p class="text-[10px] md:text-xs text-slate-500 mt-1">লক্ষ্যমাত্রা: <span class="font-semibold text-slate-700">${m.nextKm} KM</span> | বর্তমান: <span class="font-semibold text-slate-700">${currentKm} KM</span></p>
-                            </div>
-                        </div>`;
+                    alerts.innerHTML += `<div class="bg-white border border-amber-100 p-4 rounded-xl shadow-sm mb-3 flex gap-3 hover:shadow-md transition"><div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 shrink-0"><i class="fa-solid fa-clock"></i></div><div class="flex-1"><h4 class="font-bold text-slate-800 text-sm md:text-base">${m.vehicleBa} <span class="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded ml-1">${m.typeName}</span></h4><p class="text-xs font-bold text-amber-600 mt-1">${reason}</p><p class="text-[10px] md:text-xs text-slate-500 mt-1">লক্ষ্যমাত্রা: <span class="font-semibold text-slate-700">${m.nextKm} KM</span> | বর্তমান: <span class="font-semibold text-slate-700">${currentKm} KM</span></p></div></div>`;
                 }
             });
 
@@ -748,10 +650,7 @@
                     <div class="flex justify-between items-start border-b border-slate-50 pb-3">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 md:w-12 md:h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center text-lg"><i class="fa-solid fa-truck"></i></div>
-                            <div>
-                                <h3 class="font-bold text-slate-800 text-lg leading-none mb-1">${v.baNo}</h3>
-                                <span class="text-[10px] uppercase font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded tracking-wider">${v.type}</span>
-                            </div>
+                            <div><h3 class="font-bold text-slate-800 text-lg leading-none mb-1">${v.baNo}</h3><span class="text-[10px] uppercase font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded tracking-wider">${v.type}</span></div>
                         </div>
                         <div class="flex gap-1.5">
                             <button onclick="window.downloadVehicleReport('${v.id}')" class="w-8 h-8 bg-indigo-50 text-indigo-500 rounded-lg hover:bg-indigo-500 hover:text-white transition flex items-center justify-center" title="পিডিএফ ডাউনলোড"><i class="fa-solid fa-file-pdf"></i></button>
@@ -759,13 +658,8 @@
                         </div>
                     </div>
                     <div class="flex justify-between items-center pt-1">
-                        <div>
-                            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded-md shadow-sm inline-block mb-1.5"><i class="fa-solid fa-gauge-high mr-1"></i> ${v.currentKm || 0} কি.মি</span>
-                            ${maintStatus}
-                        </div>
-                        <button onclick="window.openKmModal('${v.id}', '${v.baNo}', ${v.currentKm || 0})" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-lg text-xs font-bold active:scale-95 transition whitespace-nowrap shadow-md">
-                            মিটার আপডেট
-                        </button>
+                        <div><span class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded-md shadow-sm inline-block mb-1.5"><i class="fa-solid fa-gauge-high mr-1"></i> ${v.currentKm || 0} কি.মি</span>${maintStatus}</div>
+                        <button onclick="window.openKmModal('${v.id}', '${v.baNo}', ${v.currentKm || 0})" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-lg text-xs font-bold active:scale-95 transition whitespace-nowrap shadow-md">মিটার আপডেট</button>
                     </div>
                 </div>`;
             }).join('');
@@ -774,10 +668,7 @@
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center hover:shadow-md transition">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-500"><i class="fa-solid fa-wrench"></i></div>
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm md:text-base">${m.vehicleBa} <span class="text-[10px] font-normal text-slate-500 bg-slate-100 px-1 rounded ml-1">${m.typeName}</span></h4>
-                            <p class="text-xs text-slate-500 mt-0.5"><i class="fa-regular fa-calendar mr-1"></i>${formatDate(m.doneDate)} <span class="mx-1">|</span> <i class="fa-solid fa-gauge-high mr-1"></i>${m.doneKm} KM</p>
-                        </div>
+                        <div><h4 class="font-bold text-slate-800 text-sm md:text-base">${m.vehicleBa} <span class="text-[10px] font-normal text-slate-500 bg-slate-100 px-1 rounded ml-1">${m.typeName}</span></h4><p class="text-xs text-slate-500 mt-0.5"><i class="fa-regular fa-calendar mr-1"></i>${formatDate(m.doneDate)} <span class="mx-1">|</span> <i class="fa-solid fa-gauge-high mr-1"></i>${m.doneKm} KM</p></div>
                     </div>
                     <button onclick="window.deleteMaintenance('${m.id}')" class="text-red-400 hover:text-white hover:bg-red-500 p-2.5 rounded-lg transition"><i class="fa-solid fa-trash-can"></i></button>
                 </div>`).join('');
