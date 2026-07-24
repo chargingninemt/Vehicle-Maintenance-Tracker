@@ -21,45 +21,12 @@
         .grad-primary { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
         .grad-danger { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); }
         .clickable-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); cursor: pointer; }
-        
-        .login-bg { background: linear-gradient(rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9)), url('https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=1000') center/cover; }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col relative z-0">
 
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="fixed inset-0 z-[100] flex items-center justify-center login-bg px-4 transition-opacity duration-300">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8 transform transition-all">
-            <div class="text-center mb-8">
-                <div class="w-24 h-24 mx-auto mb-4 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center shadow-md border-4 border-emerald-100 text-4xl">
-                    <i class="fa-solid fa-truck-shield"></i>
-                </div>
-                <h1 class="text-2xl font-bold text-emerald-800">৯ ইস্ট বেঙ্গল রেজিমেন্ট</h1>
-                <p class="text-slate-500 text-sm mt-1">এমটি (MT) মেইনটেন্যান্স ট্র্যাকার</p>
-            </div>
-            
-            <form id="login-form" class="space-y-5">
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1.5"><i class="fa-solid fa-envelope mr-1 text-slate-400"></i> ইমেইল</label>
-                    <input type="email" id="login-email" required placeholder="admin@9eb.com" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1.5"><i class="fa-solid fa-lock mr-1 text-slate-400"></i> পাসওয়ার্ড</label>
-                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none">
-                </div>
-                <button type="submit" id="login-btn" class="w-full grad-primary text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition-all mt-4">
-                    লগইন করুন
-                </button>
-                <div id="login-error" class="hidden text-center text-red-500 text-sm font-semibold mt-2 bg-red-50 py-2 rounded-lg">ইমেইল বা পাসওয়ার্ড ভুল!</div>
-            </form>
-            <div class="mt-6 text-center text-xs text-slate-400">
-                &copy; <span id="login-year"></span> অনুমোদিত ব্যবহারকারী ব্যতীত প্রবেশ নিষেধ।
-            </div>
-        </div>
-    </div>
-
-    <!-- MAIN APP CONTAINER -->
-    <div id="main-app" class="hidden flex-col min-h-screen pb-24 md:pb-10 relative z-10 bg-gray-100">
+    <!-- MAIN APP CONTAINER (No Login Screen) -->
+    <div id="main-app" class="flex flex-col min-h-screen pb-24 md:pb-10 relative z-10 bg-gray-100">
         <header class="bg-white shadow-sm sticky top-0 z-40">
             <div class="px-4 py-3 flex justify-between items-center max-w-5xl mx-auto">
                 <div class="flex items-center gap-3">
@@ -73,7 +40,6 @@
                 </div>
                 <div class="flex gap-2">
                     <button onclick="window.manualSyncToSheets()" class="w-10 h-10 rounded-full bg-slate-50 text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 shadow-sm flex items-center justify-center transition" title="গুগল শিট আপডেট"><i class="fa-solid fa-cloud-arrow-up"></i></button>
-                    <button onclick="window.logoutUser()" class="w-10 h-10 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white shadow-sm flex items-center justify-center transition" title="লগআউট"><i class="fa-solid fa-right-from-bracket"></i></button>
                 </div>
             </div>
 
@@ -258,7 +224,7 @@
     <!-- Core Scripts -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
@@ -285,17 +251,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        if(isCanvas) {
-            const initAuth = async () => {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            };
-            initAuth();
-        }
-        
         let vehicles = [], maintenanceLog = [], taskRules = [], vehicleTypes = [];
         let chartInstance = null;
         let unsubscribeListeners = [];
@@ -321,7 +276,6 @@
         };
 
         document.getElementById('current-year').innerText = new Date().getFullYear();
-        document.getElementById('login-year').innerText = new Date().getFullYear();
 
         window.showToast = (msg, isErr=false) => {
             const t = document.createElement('div');
@@ -331,34 +285,15 @@
             setTimeout(()=>t.remove(), 3000);
         };
 
-        // --- AUTH LOGIC ---
-        const loginScreen = document.getElementById('login-screen');
-        const mainApp = document.getElementById('main-app');
-        const loginBtn = document.getElementById('login-btn');
-        const loginError = document.getElementById('login-error');
-
-        document.getElementById('login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> লগইন হচ্ছে...';
-            loginError.classList.add('hidden');
-            signInWithEmailAndPassword(auth, email, password)
-                .then(() => loginBtn.innerHTML = 'লগইন করুন')
-                .catch(() => { loginBtn.innerHTML = 'লগইন করুন'; loginError.classList.remove('hidden'); });
-        });
-
-        window.logoutUser = () => signOut(auth).then(() => window.showToast("সফলভাবে লগআউট হয়েছেন"));
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                loginScreen.classList.add('hidden'); mainApp.classList.remove('hidden'); mainApp.classList.add('flex');
+        // --- AUTH LOGIC (Auto Login Anonymously) ---
+        signInAnonymously(auth)
+            .then(() => {
                 setupDataListeners();
-            } else {
-                loginScreen.classList.remove('hidden'); mainApp.classList.add('hidden'); mainApp.classList.remove('flex');
-                clearDataListeners();
-            }
-        });
+            })
+            .catch((error) => {
+                console.error("Firebase connection error:", error);
+                window.showToast("ডেটাবেজ কানেকশন এরর!", true);
+            });
 
         function setupDataListeners() {
             clearDataListeners();
